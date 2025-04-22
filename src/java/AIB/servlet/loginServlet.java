@@ -127,24 +127,21 @@ public class loginServlet extends HttpServlet {
     private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session != null) {
-            // 记录注销前的用户信息（用于调试）
             System.out.println("Logging out user: " + session.getAttribute("loginName"));
 
-            // 清除所有会话属性
             session.removeAttribute("userId");
             session.removeAttribute("loginName");
             session.removeAttribute("userType");
             session.removeAttribute("userName");
-            session.removeAttribute("ID");  // 添加这行清除新增的ID属性
+            session.removeAttribute("ID");  
 
-            // 使会话无效
+     
             session.invalidate();
             System.out.println("Session invalidated successfully");
         } else {
             System.out.println("No active session found during logout");
         }
 
-        // 重定向到登录页并显示注销成功消息
         response.sendRedirect("login.jsp?message=logout_success");
     }
 
@@ -152,7 +149,6 @@ public class loginServlet extends HttpServlet {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = digest.digest(password.getBytes());
 
-        // Convert byte array to hexadecimal string
         StringBuilder hexString = new StringBuilder();
         for (byte b : hashBytes) {
             String hex = Integer.toHexString(0xff & b);

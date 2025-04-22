@@ -4,8 +4,10 @@
  */
 package AIB.Bean;
 
+import java.io.Serializable;
 
-public class UserBean {
+
+public class UserBean implements Serializable {
     private String loginName;
     private String name;
     private String password;
