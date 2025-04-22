@@ -12,6 +12,7 @@
 
 # Package Files #
 *.jar
+!mysql*.jar
 *.war
 *.nar
 *.ear
