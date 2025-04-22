@@ -6,7 +6,7 @@
 	 version="6.0">
 <context-param>
         <param-name>dbUrl</param-name>
-        <param-value>jdbc:mysql://192.9.149.106:3306/ITP4511_DB?useSSL=false&allowMultiQueries=true</param-value>    </context-param>
+        <param-value>jdbc:mysql://192.9.149.106:3306/ITP4511_DB?useSSL=false&amp;allowMultiQueries=true</param-value>    </context-param>
     <context-param>
         <param-name>dbUser</param-name>
         <param-value>ITP4511user</param-value>    </context-param>
