@@ -21,7 +21,7 @@
                     case "S": // Senior Management
                         response.sendRedirect("managementDashboard.jsp");
                         break;
-                    default: // Invalid role
+                    default: // deleted role
                         response.sendRedirect("login.jsp");
                         break;
                 }
