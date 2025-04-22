@@ -2,7 +2,7 @@ package AIB.algorithm;
 
 public class SnowflakeSingleton {
     private static class Holder {
-        static final Snowflake INSTANCE = new Snowflake(1L, 1L); // 替换你的 datacenterId 和 machineId
+        static final Snowflake INSTANCE = new Snowflake(1L, 1L);
     }
 
     private SnowflakeSingleton() {}
