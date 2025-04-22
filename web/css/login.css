@@ -1,0 +1,203 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fefefe;
+
+  overflow: hidden;
+}
+body::before,
+body::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+}
+body::before {
+  width: 30vh;
+  height: 30vh;
+  background-color: #7875ac40;
+  top: 10vh;
+  left: -10vh;
+}
+body::after {
+  width: 60vh;
+  height: 60vh;
+  background-color: #7875ac20;
+  bottom: -15vh;
+  right: -15vh;
+}
+
+.card-container {
+  position: relative;
+  z-index: 1;
+  width: 500px;
+  height: auto;
+  background-color: #fff;
+  box-shadow: 0 8px 50px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease-in-out;
+}
+h1 {
+  font-size: 40px;
+  width: 75%;
+  letter-spacing: 10px;
+  margin-bottom: 30px;
+}
+.ipt-box {
+  width: 75%;
+  margin: 10px 0;
+  border-radius: 5px;
+  position: relative;
+  z-index: 2;
+}
+
+.ipt-box input[type="password"],
+.ipt-box input[type="text"] {
+  padding: 15px;
+  width: 100%;
+}
+
+.ipt-box input {
+  font-size: 16px;
+  border: 1px solid #e3e3e3;
+  border-radius: 5px;
+  outline: none;
+  background: none;
+  position: relative;
+  z-index: 2;
+}
+
+.ipt-box input[type="password"]::-ms-reveal,
+.ipt-box input[type="password"]::-ms-clear {
+  display: none;
+}
+
+.ipt-box .fa-regular {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  z-index: 3;
+  cursor: pointer;
+}
+
+.btn-login,
+.btn-next,
+.btn-sign-up {
+  width: 75%;
+  height: 50px;
+  border: none;
+  outline: none;
+  background-color: #7875ac;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 18px;
+  letter-spacing: 8px;
+  text-indent: 8px;
+  cursor: pointer;
+}
+
+.card-container>p{
+  margin-top: 30px;
+}
+
+.beam {
+  width: 100vw;
+  height: 25vw;
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: 30px;
+
+  clip-path: polygon(100% 50%, 100% 50%, 0 0, 0 100%);
+
+  transform: translateY(-50%) rotate(var(--beam-deg, 0));
+
+  transform-origin: 100% 50%;
+
+  transition: transform 0.2s ease-out;
+}
+
+body.show-password {
+  background-color: #000;
+}
+body.show-password::before,
+body.show-password::after {
+  display: none;
+}
+.show-password .card-container {
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 50px rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.show-password h1 {
+  color: #fff;
+}
+.show-password .ipt-box {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.show-password input {
+  color: #fff;
+  border: 1px solid #000;
+}
+.show-beam #password,
+.show-beam #confirmPassword {
+  color: #000;
+}
+
+.show-beam .beam {
+  background-color: yellow;
+}
+.show-password .btn-login {
+  background-color: #fff;
+  color: #000;
+}
+.show-password .eye {
+  color: #fff;
+}
+.move-card {
+  width: 100%;
+  position: relative;
+  & p {
+    text-align: left;
+    width: 75%;
+  }
+}
+
+.show-password .label {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.show-password .fa-regular.fa-eye-slash {
+  color: gray;
+}
+.show-beam .fa-regular.fa-eye {
+  color: white;
+}
+.show-password p {
+  color: white;
+}
+
+.card-container span {
+  margin-top: 80px;
+  width: 75%;
+  & p {
+    color: gray;
+    &:hover {
+      color: black;
+      cursor: pointer;
+    }
+  }
+}
