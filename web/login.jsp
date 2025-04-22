@@ -54,7 +54,6 @@
                     <i class="fa-regular fa-eye-slash password-toggle"></i>
                     <div class="beam"></div>
                 </div>
-                <p>If you do not have an account, please <a href="./registrar.html" class="link-underline-primary link-offset-2" id="other">sign up</a></p>
                 <button type="submit" class="btn-login">Login</button>
                 <span></span>
             </div>

@@ -4,7 +4,6 @@
  */
 package AIB.servlet;
 
-
 //import other file
 import AIB.db.ITP4511_DB;
 import java.io.IOException;
@@ -23,9 +22,9 @@ import java.sql.SQLException;
 
 @WebServlet(name = "loginServlet", urlPatterns = {"/loginServlet"})
 public class loginServlet extends HttpServlet {
-     
+
     private ITP4511_DB db;
-    
+
     public void init() {
         String dbUser = this.getServletContext().getInitParameter("dbUser");
         String dbPassword = this.getServletContext().getInitParameter("dbPassword");
@@ -44,95 +43,78 @@ public class loginServlet extends HttpServlet {
     }
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    System.out.println("processRequest called - action: " + request.getParameter("action")); // Debug log
-    
-    String action = request.getParameter("action");
-    
-    if ("login".equals(action)) {
-        System.out.println("Handling login action"); // Debug log
-        handleLogin(request, response);
-    } else if ("logout".equals(action)) {
-        System.out.println("Handling logout action"); // Debug log
-        handleLogout(request, response);
-    } else {
-        System.out.println("Invalid action: " + action); // Debug log
-        response.sendRedirect("login.jsp?error=invalid_action");
-    }
-}
 
-private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    System.out.println("handleLogin method started"); // Debug log
-    
-    String loginName = request.getParameter("loginName");
-    String password = request.getParameter("password");
-    
-    System.out.println("Login attempt - username: " + loginName); // Debug log
-    
-    if (loginName == null || loginName.isEmpty() || password == null || password.isEmpty()) {
-        System.out.println("Empty fields detected"); // Debug log
-        response.sendRedirect("login.jsp?error=empty_fields");
-        return;
-    }
-    
-    try {
-        System.out.println("Attempting database connection"); // Debug log
-        Connection conn = db.getConnection();
-        String sql = "SELECT * FROM user WHERE loginName = ? AND password = ? AND type != 'D'";
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        
-        String hashedPassword = hashPassword(password);
-        System.out.println("Password hashed"); // Debug log
-        
-        stmt.setString(1, loginName);
-        stmt.setString(2, hashedPassword);
-        
-        System.out.println("Executing query: " + sql); // Debug log
-        System.out.println("Parameters - loginName: " + loginName + ", password: [hashed]"); // Debug log
-        
-        ResultSet rs = stmt.executeQuery();
-        
-        if (rs.next()) {
-            System.out.println("User found in database"); // Debug log
-            HttpSession session = request.getSession();
-       
-            session.setAttribute("loginName", loginName);
-            session.setAttribute("userType", rs.getString("type"));
-            session.setAttribute("userName", rs.getString("name"));
-            if(rs.getString("type").equals("B")){
-                session.setAttribute("ID", rs.getString("shopid"));
-            }else{
-                session.setAttribute("ID", rs.getString("warehouseid"));
-            }
-            System.out.println("Session created for user: " + loginName); // Debug log
-            System.out.println("User type: " + rs.getString("type")); // Debug log
-            
-            redirectBasedOnRole(rs.getString("type"), response);
+        String action = request.getParameter("action");
+
+        if ("login".equals(action)) {
+            handleLogin(request, response);
+        } else if ("logout".equals(action)) {
+            handleLogout(request, response);
         } else {
-            System.out.println("No matching user found or invalid credentials"); // Debug log
-            response.sendRedirect("login.jsp?error=invalid_credentials");
+            response.sendRedirect("login.jsp?error=invalid_action");
         }
-        
-        rs.close();
-        stmt.close();
-        conn.close();
-    } catch (SQLException e) {
-        System.err.println("Database error: " + e.getMessage()); // Error log
-        e.printStackTrace();
-        response.sendRedirect("login.jsp?error=database_error");
-    } catch (NoSuchAlgorithmException e) {
-        System.err.println("Hashing algorithm error: " + e.getMessage()); // Error log
-        e.printStackTrace();
-        response.sendRedirect("login.jsp?error=server_error");
     }
-}
+
+    private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        String loginName = request.getParameter("loginName");
+        String password = request.getParameter("password");
+
+        if (loginName == null || loginName.isEmpty() || password == null || password.isEmpty()) {
+            response.sendRedirect("login.jsp?error=empty_fields");
+            return;
+        }
+
+        try {
+            Connection conn = db.getConnection();
+            String sql = "SELECT * FROM user WHERE loginName = ? AND password = ? AND type != 'D'";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            String hashedPassword = hashPassword(password);
+
+            stmt.setString(1, loginName);
+            stmt.setString(2, hashedPassword);
+
+            System.out.println("Parameters - loginName: " + loginName + ", password: [hashed]"); // Debug log
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                HttpSession session = request.getSession();
+
+                session.setAttribute("loginName", loginName);
+                session.setAttribute("userType", rs.getString("type"));
+                session.setAttribute("userName", rs.getString("name"));
+                if (rs.getString("type").equals("B")) {
+                    session.setAttribute("ID", rs.getString("shopid"));
+                } else {
+                    session.setAttribute("ID", rs.getString("warehouseid"));
+                }
+
+                redirectBasedOnRole(rs.getString("type"), response);
+            } else {
+                response.sendRedirect("login.jsp?error=invalid_credentials");
+            }
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.sendRedirect("login.jsp?error=database_error");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            response.sendRedirect("login.jsp?error=server_error");
+        }
+    }
 
     private void redirectBasedOnRole(String userType, HttpServletResponse response) throws IOException {
         switch (userType) {
             case "B": // Bakery shop staff
-                response.sendRedirect("bakeryDashboard.jsp");
+                response.sendRedirect("Shop/bakeryDashboard.jsp");
                 break;
             case "W": // Warehouse staff
-                response.sendRedirect("warehouseDashboard.jsp");
+                response.sendRedirect("Warehouse/warehouseDashboard.jsp");
                 break;
             case "S": // Senior management
                 response.sendRedirect("Manager/managementDashboard.jsp");
@@ -145,30 +127,41 @@ private void handleLogin(HttpServletRequest request, HttpServletResponse respons
     private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session != null) {
-            // Clear all session attributes
+            // 记录注销前的用户信息（用于调试）
+            System.out.println("Logging out user: " + session.getAttribute("loginName"));
+
+            // 清除所有会话属性
             session.removeAttribute("userId");
             session.removeAttribute("loginName");
             session.removeAttribute("userType");
             session.removeAttribute("userName");
-            
-            // Invalidate the session
+            session.removeAttribute("ID");  // 添加这行清除新增的ID属性
+
+            // 使会话无效
             session.invalidate();
+            System.out.println("Session invalidated successfully");
+        } else {
+            System.out.println("No active session found during logout");
         }
+
+        // 重定向到登录页并显示注销成功消息
         response.sendRedirect("login.jsp?message=logout_success");
     }
 
     private String hashPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashBytes = digest.digest(password.getBytes());
-        
+
         // Convert byte array to hexadecimal string
         StringBuilder hexString = new StringBuilder();
         for (byte b : hashBytes) {
             String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) hexString.append('0');
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
             hexString.append(hex);
         }
-        
+
         return hexString.toString();
     }
 }
