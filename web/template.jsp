@@ -1,5 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
-<%@ taglib prefix="component" tagdir="/WEB-INF/tags/components" %>
+<%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -23,7 +23,7 @@
 </head>
 
 <body>
-  <component:modal />
+
   
   <component:navbar />
 
