@@ -4,9 +4,13 @@
  */
 package AIB.db;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 /**
  *
  * @author ku123
@@ -66,5 +70,34 @@ public class ITP4511_DB {
         } finally {
             this.closeConnection(conn);
         }
+    }
+
+    public void createDB() throws SQLException, IOException {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            Statement stmt = conn.createStatement();
+
+            String aibDbSql = readFile("AIBDB.sql");
+            String testDataSql = readFile("testData.sql");
+
+            stmt.execute(aibDbSql);
+            stmt.execute(testDataSql);
+
+            stmt.close();
+        } finally {
+            closeConnection(conn);
+        }
+    }
+
+    private String readFile(String fileName) throws IOException {
+        StringBuilder content = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        }
+        return content.toString();
     }
 }
