@@ -106,7 +106,6 @@ public class NavbarTag extends SimpleTagSupport {
         } else if ("C".equals(warehouseType)) { 
             warehouseNav.put("Stock Receive", "/centralWarehouseReceiveServlet");
             warehouseNav.put("Reverse", "/acceptReserveListServlet");
-            warehouseNav.put("Stock Mangement", "/inventoryManagementServlet");
         } else {
             warehouseNav.put("Warehouse Dashboard", "/Warehouse/warehouseDashboard.jsp");
             warehouseNav.put("Inventory Management", "/inventoryServlet");
