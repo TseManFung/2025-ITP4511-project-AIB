@@ -3,10 +3,13 @@
     Created on : 2025年4月23日, 上午10:05:23
     Author     : andyt
 --%>
-
-<%@ page contentType="text/html;charset=UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
+<!DOCTYPE html>
+<html>
+<head>
 <jsp:include page="/component/head.jsp" />
+<title>page name</title>
 <style>
     .state-C { background-color: #bde5ff; }
     .state-A { background-color: #c3e6cb; }
@@ -14,87 +17,134 @@
     .state-F { background-color: #d6d8db; }
     .state-badge { padding: 3px 8px; border-radius: 12px; }
 </style>
+</head>
 <body>
-  <jsp:include page="/component/navbar.jsp" />
+  <jsp:include page="/component/modal.jsp" />
   
-  <div class="container mt-5">
+  <component:navbar />
+
+
+  <!-- header -->
+  <div style="height: calc(0lvh + 128px)" id="header"></div>
+  <!-- /header -->
+
+  <!-- content -->
+  <div class="d-flex position-relative content-bg justify-content-center">
+    <div class="container">
     <h2 class="mb-4">Reservation Records</h2>
-    
-    <c:if test="${not empty param.success}">
-      <div class="alert alert-success">Reservation completed successfully</div>
-    </c:if>
-    <c:if test="${not empty param.error}">
-      <div class="alert alert-danger">
-        <c:choose>
-          <c:when test="${param.error == 1}">Operation failed</c:when>
-          <c:when test="${param.error == 2}">Database error</c:when>
-        </c:choose>
-      </div>
-    </c:if>
+      
+      <%-- 宣告區塊，定義方法 --%>
+      <%! 
+      public String getErrorMessage(int errorCode) {
+          switch (errorCode) {
+              case 1: return "Operation failed";
+              case 2: return "Database error";
+              default: return "Unknown error";
+          }
+      }
+      %>
 
-    <div class="card mb-4">
-      <div class="card-header">Filter & Sort</div>
-      <div class="card-body">
-        <form method="get" class="row g-3">
-          <div class="col-md-4">
-            <label class="form-label">Filter by Status:</label>
-            <select name="filter" class="form-select" onchange="this.form.submit()">
-              <option value="">All</option>
-              <option value="C" ${param.filter == 'C' ? 'selected' : ''}>Created</option>
-              <option value="A" ${param.filter == 'A' ? 'selected' : ''}>Approved</option>
-              <option value="R" ${param.filter == 'R' ? 'selected' : ''}>Rejected</option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Sort by:</label>
-            <select name="sort" class="form-select" onchange="this.form.submit()">
-              <option value="">Default</option>
-              <option value="date" ${param.sort == 'date' ? 'selected' : ''}>Create Date</option>
-              <option value="reserveDate" ${param.sort == 'reserveDate' ? 'selected' : ''}>Reserve Date</option>
-              <option value="status" ${param.sort == 'status' ? 'selected' : ''}>Status</option>
-            </select>
-          </div>
-        </form>
-      </div>
-    </div>
+      <%-- 顯示成功或錯誤訊息 --%>
+      <% 
+      String successMessage = request.getParameter("success");
+      String errorMessage = null;
+      if (request.getParameter("error") != null) {
+          int errorCode = Integer.parseInt(request.getParameter("error"));
+          errorMessage = getErrorMessage(errorCode);
+      }
+      %>
+      <% if (successMessage != null) { %>
+        <div class="alert alert-success">Reservation completed successfully</div>
+      <% } %>
+      <% if (errorMessage != null) { %>
+        <div class="alert alert-danger"><%= errorMessage %></div>
+      <% } %>
 
-    <table class="table table-bordered">
-      <thead class="thead-dark">
-        <tr>
-          <th>Reservation ID</th>
-          <th>Create Date</th>
-          <th>Reserve Date</th>
-          <th>Items Count</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <c:forEach items="${records}" var="record">
-          <tr class="state-${record.state}">
-            <td>${record.id}</td>
-            <td>${record.DT}</td>
-            <td>${record.reserveDT}</td>
-            <td>${record.itemCount}</td>
-            <td>
-              <span class="state-badge state-${record.state}">
-                ${record.state}
-              </span>
-            </td>
-            <td>
-              <c:if test="${record.state == 'A'}">
-                <form method="post" style="display:inline">
-                  <input type="hidden" name="reserveId" value="${record.id}">
-                  <button type="submit" class="btn btn-sm btn-success" 
-                          onclick="return confirm('Mark as completed?')">Complete</button>
-                </form>
-              </c:if>
-              <a href="reserveDetail?id=${record.id}" class="btn btn-sm btn-info">Details</a>
-            </td>
+      <div class="card mb-4">
+        <div class="card-header">Filter & Sort</div>
+        <div class="card-body">
+          <form method="get" class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Filter by Status:</label>
+              <select name="filter" class="form-select" onchange="this.form.submit()">
+                <option value="">All</option>
+                <option value="C" <%= "C".equals(request.getParameter("filter")) ? "selected" : "" %>>Created</option>
+                <option value="A" <%= "A".equals(request.getParameter("filter")) ? "selected" : "" %>>Approved</option>
+                <option value="R" <%= "R".equals(request.getParameter("filter")) ? "selected" : "" %>>Rejected</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Sort by:</label>
+              <select name="sort" class="form-select" onchange="this.form.submit()">
+                <option value="">Default</option>
+                <option value="date" <%= "date".equals(request.getParameter("sort")) ? "selected" : "" %>>Create Date</option>
+                <option value="reserveDate" <%= "reserveDate".equals(request.getParameter("sort")) ? "selected" : "" %>>Reserve Date</option>
+                <option value="status" <%= "status".equals(request.getParameter("sort")) ? "selected" : "" %>>Status</option>
+              </select>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <table class="table table-bordered">
+        <thead class="thead-dark">
+          <tr>
+            <th>Reservation ID</th>
+            <th>Create Date</th>
+            <th>Reserve Date</th>
+            <th>Items Count</th>
+            <th>Status</th>
+            <th>Action</th>
           </tr>
-        </c:forEach>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% 
+          java.util.List<java.util.Map<String, Object>> records = 
+              (java.util.List<java.util.Map<String, Object>>) request.getAttribute("records");
+          for (java.util.Map<String, Object> record : records) {
+              String id = (String) record.get("id");
+              String createDate = (String) record.get("DT");
+              String reserveDate = (String) record.get("reserveDT");
+              int itemCount = (int) record.get("itemCount");
+              String state = (String) record.get("state");
+          %>
+            <tr class="state-<%= state %>">
+              <td><%= id %></td>
+              <td><%= createDate %></td>
+              <td><%= reserveDate %></td>
+              <td><%= itemCount %></td>
+              <td>
+                <span class="state-badge state-<%= state %>">
+                  <%= state %>
+                </span>
+              </td>
+              <td>
+                <% if ("A".equals(state)) { %>
+                  <form method="post" style="display:inline">
+                    <input type="hidden" name="reserveId" value="<%= id %>">
+                    <button type="submit" class="btn btn-sm btn-success" 
+                            onclick="return confirm('Mark as completed?')">Complete</button>
+                  </form>
+                <% } %>
+                <a href="reserveDetail?id=<%= id %>" class="btn btn-sm btn-info">Details</a>
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div> 
   </div>
+  <!-- /content -->
+
+  <!-- GoToTop -->
+  <div id="page-top" style="">
+    <a href="#header"><img src="${pageContext.request.contextPath}/images/common/returan-top.png" /></a>
+  </div>
+  <!-- /GoToTop -->
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>      
 </body>
 </html>
