@@ -75,23 +75,55 @@ public class loginServlet extends HttpServlet {
             stmt.setString(1, loginName);
             stmt.setString(2, hashedPassword);
 
-            System.out.println("Parameters - loginName: " + loginName + ", password: [hashed]"); // Debug log
+            System.out.println("Parameters - loginName: " + loginName + ", password: [hashed]");
 
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 HttpSession session = request.getSession();
+                String userType = rs.getString("type");
+                String id;
 
                 session.setAttribute("loginName", loginName);
-                session.setAttribute("userType", rs.getString("type"));
+                session.setAttribute("userType", userType);
                 session.setAttribute("userName", rs.getString("name"));
-                if (rs.getString("type").equals("B")) {
-                    session.setAttribute("ID", rs.getString("shopid"));
-                } else {
-                    session.setAttribute("ID", rs.getString("warehouseid"));
+
+                Long countryId = null;
+                Long cityId = null;
+
+                if (userType.equals("B")) {
+                    id = rs.getString("shopid");
+                    session.setAttribute("ID", id);
+
+                    String shopQuery = "SELECT s.cityid, c.countryid FROM shop s "
+                            + "JOIN city c ON s.cityid = c.id WHERE s.id = ?";
+                    try (PreparedStatement shopStmt = conn.prepareStatement(shopQuery)) {
+                        shopStmt.setLong(1, Long.parseLong(id));
+                        ResultSet shopRs = shopStmt.executeQuery();
+                        if (shopRs.next()) {
+                            cityId = shopRs.getLong("cityid");
+                            countryId = shopRs.getLong("countryid");
+                        }
+                    }
+                } else if(userType.equals("W")) {
+                    id = rs.getString("warehouseid");
+                    session.setAttribute("ID", id);
+
+                    String warehouseQuery = "SELECT countryid FROM warehouse WHERE id = ?";
+                    try (PreparedStatement warehouseStmt = conn.prepareStatement(warehouseQuery)) {
+                        warehouseStmt.setLong(1, Long.parseLong(id));
+                        ResultSet warehouseRs = warehouseStmt.executeQuery();
+                        if (warehouseRs.next()) {
+                            countryId = warehouseRs.getLong("countryid");
+                        }
+                    }
+                    cityId = null;
                 }
 
-                redirectBasedOnRole(rs.getString("type"), response);
+                session.setAttribute("countryId", countryId);
+                session.setAttribute("cityId", cityId);
+
+                redirectBasedOnRole(userType, response);
             } else {
                 response.sendRedirect("login.jsp?error=invalid_credentials");
             }
@@ -133,9 +165,8 @@ public class loginServlet extends HttpServlet {
             session.removeAttribute("loginName");
             session.removeAttribute("userType");
             session.removeAttribute("userName");
-            session.removeAttribute("ID");  
+            session.removeAttribute("ID");
 
-     
             session.invalidate();
             System.out.println("Session invalidated successfully");
         } else {
