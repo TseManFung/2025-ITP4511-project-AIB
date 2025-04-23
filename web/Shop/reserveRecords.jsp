@@ -9,7 +9,7 @@
 <html>
 <head>
 <jsp:include page="/component/head.jsp" />
-<title>page name</title>
+<title>Reservation Records</title>
 <style>
     .state-C { background-color: #bde5ff; }
     .state-A { background-color: #c3e6cb; }
@@ -23,7 +23,6 @@
   
   <component:navbar />
 
-
   <!-- header -->
   <div style="height: calc(0lvh + 128px)" id="header"></div>
   <!-- /header -->
@@ -31,19 +30,8 @@
   <!-- content -->
   <div class="d-flex position-relative content-bg justify-content-center">
     <div class="container">
-    <h2 class="mb-4">Reservation Records</h2>
+      <h2 class="mb-4">Reservation Records</h2>
       
-      <%-- 宣告區塊，定義方法 --%>
-      <%! 
-      public String getErrorMessage(int errorCode) {
-          switch (errorCode) {
-              case 1: return "Operation failed";
-              case 2: return "Database error";
-              default: return "Unknown error";
-          }
-      }
-      %>
-
       <%-- 顯示成功或錯誤訊息 --%>
       <% 
       String successMessage = request.getParameter("success");
@@ -101,12 +89,13 @@
           <% 
           java.util.List<java.util.Map<String, Object>> records = 
               (java.util.List<java.util.Map<String, Object>>) request.getAttribute("records");
-          for (java.util.Map<String, Object> record : records) {
-              String id = (String) record.get("id");
-              String createDate = (String) record.get("DT");
-              String reserveDate = (String) record.get("reserveDT");
-              int itemCount = (int) record.get("itemCount");
-              String state = (String) record.get("state");
+          if (records != null && !records.isEmpty()) {
+              for (java.util.Map<String, Object> record : records) {
+                  String id = (String) record.get("id");
+                  String createDate = (String) record.get("DT");
+                  String reserveDate = (String) record.get("reserveDT");
+                  int itemCount = (int) record.get("itemCount");
+                  String state = (String) record.get("state");
           %>
             <tr class="state-<%= state %>">
               <td><%= id %></td>
@@ -129,6 +118,13 @@
                 <a href="reserveDetail?id=<%= id %>" class="btn btn-sm btn-info">Details</a>
               </td>
             </tr>
+          <% 
+              }
+          } else { 
+          %>
+            <tr>
+              <td colspan="6" class="text-center">No reservation records available</td>
+            </tr>
           <% } %>
         </tbody>
       </table>
@@ -138,7 +134,7 @@
 
   <!-- GoToTop -->
   <div id="page-top" style="">
-    <a href="#header"><img src="${pageContext.request.contextPath}/images/common/returan-top.png" /></a>
+    <a href="#header"><img src="<%= request.getContextPath() %>/images/common/returan-top.png" /></a>
   </div>
   <!-- /GoToTop -->
 

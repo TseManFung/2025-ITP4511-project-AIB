@@ -9,13 +9,12 @@
 <html>
 <head>
 <jsp:include page="/component/head.jsp" />
-<title>page name</title>
+<title>Update Stock Level</title>
 </head>
 <body>
   <jsp:include page="/component/modal.jsp" />
   
   <component:navbar />
-
 
   <!-- header -->
   <div style="height: calc(0lvh + 128px)" id="header"></div>
@@ -24,7 +23,7 @@
   <!-- content -->
   <div class="d-flex position-relative content-bg justify-content-center">
     <div class="container">
-<h2 class="mb-4">Update Stock Level</h2>
+      <h2 class="mb-4">Update Stock Level</h2>
       
       <%-- 宣告區塊，定義方法 --%>
       <%! 
@@ -57,9 +56,10 @@
             <% 
             java.util.Map<String, Integer> stock = 
                 (java.util.Map<String, Integer>) request.getAttribute("stock");
-            for (java.util.Map.Entry<String, Integer> entry : stock.entrySet()) {
-                String fruitId = entry.getKey();
-                int currentStock = entry.getValue();
+            if (stock != null && !stock.isEmpty()) {
+                for (java.util.Map.Entry<String, Integer> entry : stock.entrySet()) {
+                    String fruitId = entry.getKey();
+                    int currentStock = entry.getValue();
             %>
               <tr>
                 <td>Fruit ID: <%= fruitId %></td>
@@ -69,6 +69,13 @@
                          class="form-control" min="0" max="<%= currentStock %>"
                          required oninput="validateQuantity(this)">
                 </td>
+              </tr>
+            <% 
+                }
+            } else { 
+            %>
+              <tr>
+                <td colspan="3" class="text-center">No stock data available</td>
               </tr>
             <% } %>
           </tbody>
@@ -81,7 +88,7 @@
 
   <!-- GoToTop -->
   <div id="page-top" style="">
-    <a href="#header"><img src="${pageContext.request.contextPath}/images/common/returan-top.png" /></a>
+    <a href="#header"><img src="<%= request.getContextPath() %>/images/common/returan-top.png" /></a>
   </div>
   <!-- /GoToTop -->
 
@@ -89,7 +96,6 @@
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>      
-</body>
   <script>
     function validateQuantity(input) {
       const max = parseInt(input.max);
@@ -100,5 +106,5 @@
       }
     }
   </script>
+</body>
 </html>
-
