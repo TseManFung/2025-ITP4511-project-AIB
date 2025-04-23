@@ -19,7 +19,7 @@ public class NavbarTag extends SimpleTagSupport {
         HttpSession session = pageContext.getSession();
         String contextPath = pageContext.getServletContext().getContextPath();
 
-        // 定義不同角色的導航菜單
+      
         Map<String, String> managerNav = new LinkedHashMap<String, String>() {
             {
                 put("Dashboard", "/Manager/managementDashboard.jsp");
@@ -43,18 +43,17 @@ public class NavbarTag extends SimpleTagSupport {
 
         try {
             out.println("<header id='headerofnav'>");
-            // Logo（保持不變）
+       
             out.println("    <a href='" + getDashboardUrl(session, contextPath) + "' class='logo' id='navbar-logo'>");
             out.println("        <img src='" + contextPath + "/images/common/lego.png' style='width: 100%; height: 8vh;' alt='Logo'>");
             out.println("    </a>");
 
-            // 菜單圖標
             out.println("    <i class='fas fa-bars menu-icon'></i>");
 
-            // 導航菜單
+     
             out.println("    <ul id='navbar-ul'>");
 
-            // 根據角色顯示對應菜單項
+           
             String userType = (session != null) ? (String) session.getAttribute("userType") : null;
             Map<String, String> currentNav = getNavMap(userType, managerNav, shopNav, warehouseNav);
 
@@ -64,7 +63,7 @@ public class NavbarTag extends SimpleTagSupport {
                 out.println("        </li>");
             }
 
-            // 登出按鈕（保持不變）
+    
             out.println("        <li class='logout-item'>");
             out.println("            <a href='" + contextPath + "/loginServlet?action=logout'>Logout</a>");
             out.println("        </li>");
@@ -101,14 +100,14 @@ public class NavbarTag extends SimpleTagSupport {
         String warehouseType = (session != null) ? (String) session.getAttribute("warehouseType") : null;
         Map<String, String> warehouseNav = new LinkedHashMap<>();
 
-        if ("S".equals(warehouseType)) { // 源倉庫員工
-            warehouseNav.put("庫存轉移", "/sourceWarehouseStockChangeServlet");
-            warehouseNav.put("庫存查詢", "/inventoryQueryServlet");
-        } else if ("C".equals(warehouseType)) { // 中央倉庫員工
-            warehouseNav.put("庫存接收", "/centralWarehouseReceiveServlet");
-            warehouseNav.put("預訂批准", "/acceptReserveListServlet");
-            warehouseNav.put("庫存管理", "/inventoryManagementServlet");
-        } else { // 其他倉庫員工（保持原有導航）
+        if ("S".equals(warehouseType)) { 
+            warehouseNav.put("Stock Change", "/sourceWarehouseStockChangeServlet");
+            warehouseNav.put("Stock Update", "/AddStockServlet");
+        } else if ("C".equals(warehouseType)) { 
+            warehouseNav.put("Stock Receive", "/centralWarehouseReceiveServlet");
+            warehouseNav.put("Reverse", "/acceptReserveListServlet");
+            warehouseNav.put("Stock Mangement", "/inventoryManagementServlet");
+        } else {
             warehouseNav.put("Warehouse Dashboard", "/Warehouse/warehouseDashboard.jsp");
             warehouseNav.put("Inventory Management", "/inventoryServlet");
             warehouseNav.put("Shipment Tracking", "/shipmentServlet");
