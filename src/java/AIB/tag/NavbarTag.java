@@ -28,7 +28,6 @@ public class NavbarTag extends SimpleTagSupport {
         HttpSession session = pageContext.getSession();
         String contextPath = pageContext.getServletContext().getContextPath();
 
-        // 定义不同角色的导航菜单
         Map<String, String> managerNav = new LinkedHashMap<String, String>() {
             {
                 put("Dashboard", "/Manager/managementDashboard.jsp");
@@ -40,10 +39,10 @@ public class NavbarTag extends SimpleTagSupport {
 
         Map<String, String> shopNav = new LinkedHashMap<String, String>() {
             {
-                put("Reserve form Warehouse", "/reserveServlet");
+                put("Reserve form Warehouse", "/ReserveServlet");
                 put("Reservtion Record", "/ReserveRecordServlet");
                 put("Borrow form Other Shop", "/BorrowServlet");
-                put("Borrow Record", "/BorrowRecordServlet");
+                put("Borrow Record", "/BorrowRecordsServlet");
                 put("Stock Update", "/StockUpdateServlet");
                 
             }
