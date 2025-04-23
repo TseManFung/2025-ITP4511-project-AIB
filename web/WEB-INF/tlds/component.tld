@@ -10,4 +10,10 @@
     <tag-class>AIB.tag.NavbarTag</tag-class>
     <body-content>empty</body-content>
   </tag>
+  
+  <tag>
+          <name>Managementnavbar</name>
+    <tag-class>AIB.tag.ManagementNavbarTag</tag-class>
+    <body-content>empty</body-content>
+  </tag>
 </taglib>

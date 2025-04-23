@@ -14,7 +14,7 @@ html {
 .content-bg {
   width: 100%;
   background: rgba(255, 255, 255, 0.8);
-  min-height: calc(100vh - 244px);
+  min-height: calc(100vh);
 }
 
 .nav-wrap {
@@ -31,6 +31,7 @@ body {
   /*   background: url(../images/common/bg.jpg) no-repeat top center fixed;
   background-size: cover; */
   background: linear-gradient(50deg, skyblue 0%, rgb(196, 225, 252) 50%, skyblue 100%) !important;
+  height:100lvh;
 }
 .space-wrap {
   padding: 10% 20% 10% 20%;
