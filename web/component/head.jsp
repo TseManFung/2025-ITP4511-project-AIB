@@ -1,7 +1,7 @@
-<head>
+
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>page name</title>
+  
 
   <!-- css -->
   <link rel="icon" href="${pageContext.request.contextPath}/images/common/logo-icon.png">
@@ -17,4 +17,3 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script src="${pageContext.request.contextPath}/js/common.js"></script>
   <!-- /js -->
-</head>
