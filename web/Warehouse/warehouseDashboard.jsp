@@ -34,32 +34,13 @@
 
         <div class="d-flex position-relative content-bg justify-content-center">
             <div class="container dashboard-container">
-                <h1 class="mb-4">倉庫控制面板</h1>
+                <h1 class="mb-4">WareHouse Dashboard</h1>
 
                 <c:if test="${not empty error}">
                     <div class="alert alert-danger">${error}</div>
                 </c:if>
 
-                <h3>測試功能</h3>
-                <div class="d-flex flex-wrap">
-                    <c:choose>
-                        <c:when test="${sessionScope.warehouseType == 'S'}">
-                            <!-- 源倉庫員工：僅顯示庫存轉移按鈕 -->
-                            <a href="${pageContext.request.contextPath}/sourceWarehouseStockChangeServlet" 
-                               class="btn btn-primary btn-test">測試庫存轉移 (Source Warehouse)</a>
-                        </c:when>
-                        <c:when test="${sessionScope.warehouseType == 'C'}">
-                            <!-- 中央倉庫員工：顯示接收庫存和預訂批准按鈕 -->
-                            <a href="${pageContext.request.contextPath}/centralWarehouseReceiveServlet" 
-                               class="btn btn-primary btn-test">測試庫存接收 (Central Warehouse)</a>
-                            <a href="${pageContext.request.contextPath}/acceptReserveListServlet" 
-                               class="btn btn-primary btn-test">測試預訂批准 (Central Warehouse)</a>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="alert alert-warning">無法確定倉庫類型，請聯繫管理員</div>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
+              
             </div>
         </div>
 
