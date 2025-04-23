@@ -11,7 +11,7 @@
             String userRole = (String) session.getAttribute("userType");
             
             if (userRole != null) {
-                response.sendRedirect("login.jsp?action=home");
+                response.sendRedirect("loginServlet?action=home");
             } else {
                 response.sendRedirect("login.jsp");
             }

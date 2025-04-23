@@ -48,6 +48,7 @@
                     <table class="table table-bordered">
                         <thead class="thead-dark">
                             <tr>
+                                <th>Fruit ID</th>
                                 <th>Fruit Name</th>
                                 <th>Current Stock</th>
                                 <th>Consume Quantity</th>
@@ -55,30 +56,35 @@
                         </thead>
                         <tbody>
                             <%
-                                java.util.Map<String, Integer> stock
-                                        = (java.util.Map<String, Integer>) request.getAttribute("stock");
+                                java.util.Map<Long, java.util.Map<String, Object>> stock =
+                                    (java.util.Map<Long, java.util.Map<String, Object>>) request.getAttribute("stock");
                                 if (stock != null && !stock.isEmpty()) {
-                                    for (java.util.Map.Entry<String, Integer> entry : stock.entrySet()) {
-                                        String fruitId = entry.getKey();
-                                        int currentStock = entry.getValue();
+                                    for (java.util.Map.Entry<Long, java.util.Map<String, Object>> entry : stock.entrySet()) {
+                                        Long fruitId = entry.getKey();
+                                        java.util.Map<String, Object> fruitData = entry.getValue();
+                                        String name = (String) fruitData.get("name");
+                                        int num = (int) fruitData.get("num");
                             %>
                             <tr>
-                                <td>Fruit ID: <%= fruitId%></td>
-                                <td><%= currentStock%></td>
+                                <td><%= fruitId %></td>
+                                <td><%= name %></td>
+                                <td><%= num %></td>
                                 <td>
-                                    <input type="number" name="fruit_<%= fruitId%>" 
-                                           class="form-control" min="0" max="<%= currentStock%>"
+                                    <input type="number" name="fruit_<%= fruitId %>" value="0"
+                                           class="form-control" max="<%= num %>"
                                            required oninput="validateQuantity(this)">
                                 </td>
                             </tr>
                             <%
-                                }
-                            } else {
+                                    }
+                                } else {
                             %>
                             <tr>
-                                <td colspan="3" class="text-center">No stock data available</td>
+                                <td colspan="4" class="text-center">No stock data available</td>
                             </tr>
-                            <% }%>
+                            <%
+                                }
+                            %>
                         </tbody>
                     </table>
                     <button type="submit" class="btn btn-primary">Submit Update</button>

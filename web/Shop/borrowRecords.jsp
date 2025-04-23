@@ -65,34 +65,41 @@
                     </thead>
                     <tbody>
                         <% if (records != null) { %>
-                        <% for (Object recordObj : records) {
-                                Record record = (Record) recordObj;%>
-                        <tr>
-                            <td><%= record.getDT()%></td>
-                            <td><%= record.getFromShop()%></td>
-                            <td><%= record.getToShop()%></td>
-                            <td>
-                                <span class="state-badge state-<%= record.getState()%> text-white">
-                                    <% String state = record.getState();
-                                        if ("C".equals(state)) { %>
-                                    Pending
-                                    <% } else if ("A".equals(state)) { %>
-                                    Approved
-                                    <% } else if ("R".equals(state)) { %>
-                                    Rejected
-                                    <% }%>
-                                </span>
-                            </td>
-                            <td>
-                                <a href="BorrowRecordsDetail?id=<%= record.getId()%>" class="btn btn-sm btn-outline-primary">View</a>
-                                <% if ("A".equals(record.getState())) {%>
-                                <form method="post" class="d-inline">
-                                    <input type="hidden" name="recordId" value="<%= record.getId()%>">
-                                    <button type="submit" name="action" value="complete" class="btn btn-sm btn-success ms-2">Complete</button>
-                                </form>
-                                <% } %>
-                            </td>
-                        </tr>
+                            <% for (Map<String, Object> record : records) { %>
+                                <tr>
+                                    <td><%= record.get("DT") %></td>
+                                    <td><%= record.get("fromShop") %></td>
+                                    <td><%= record.get("toShop") %></td>
+                                    <td>
+                                        <span class="state-badge state-<%= record.get("state") %> text-white">
+                                            <% 
+                                                String state = (String) record.get("state");
+                                                if ("C".equals(state)) { 
+                                            %>
+                                                Pending
+                                            <% 
+                                                } else if ("A".equals(state)) { 
+                                            %>
+                                                Approved
+                                            <% 
+                                                } else if ("R".equals(state)) { 
+                                            %>
+                                                Rejected
+                                            <% 
+                                                } 
+                                            %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="BorrowRecordsDetail?id=<%= record.get("id") %>" class="btn btn-sm btn-outline-primary">View</a>
+                                        <% if ("A".equals(record.get("state"))) { %>
+                                        <form method="post" class="d-inline">
+                                            <input type="hidden" name="recordId" value="<%= record.get("id") %>">
+                                            <button type="submit" name="action" value="complete" class="btn btn-sm btn-success ms-2">Complete</button>
+                                        </form>
+                                        <% } %>
+                                    </td>
+                                </tr>
                         <% } %>
                         <% } else { %>
                         <tr>
@@ -108,8 +115,7 @@
 
     <!-- GoToTop -->
     <div id="page-top" style="">
-        <a href="#header"><img
-                src="<%= pageContext.getRequest().getContextPath()%>/images/common/returan-top.png" /></a>
+<a href="#header"><img src="<%= request.getContextPath() %>/images/common/returan-top.png" /></a>
     </div>
     <!-- /GoToTop -->
 

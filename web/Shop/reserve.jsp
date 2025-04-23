@@ -47,7 +47,15 @@
                         int errorCode = Integer.parseInt(request.getParameter("error"));
                         errorMessage = getErrorMessage(errorCode);
                     }
+
+                    if(request.getParameter("success") != null) {
+                        
                 %>
+                <div class="alert alert-success">
+               Reservation successful! Your reservation ID is: <%= request.getParameter("success") %>
+            </div>
+               <%  } %>
+                
                 <% if (errorMessage != null) {%>
                 <div class="alert alert-danger">
                     <%= errorMessage%>
@@ -55,6 +63,12 @@
                 <% } %>
 
                 <form method="post">
+                    <div class="mb-3">
+                        <label for="reserveDT" class="form-label">Reservation Date</label>
+                        <input type="date" id="reserveDT" name="reserveDT" class="form-control" required
+                               min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) %>"
+                               max="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 14L * 24 * 60 * 60 * 1000)) %>">
+                    </div>
                     <table class="table table-striped">
                         <thead class="thead-dark">
                             <tr>
@@ -77,7 +91,7 @@
                                 <td><%= fruitName%></td>
                                 <td><%= availableQuantity%></td>
                                 <td>
-                                    <input type="number" name="fruit_<%= fruitId%>" 
+                                    <input type="number" name="fruit_<%= fruitId%>" value="0"
                                            class="form-control" min="0" max="<%= availableQuantity%>"
                                            required oninput="validateQuantity(this)">
                                 </td>
@@ -92,7 +106,9 @@
                             <% }%>
                         </tbody>
                     </table>
-                    <button type="submit" class="btn btn-primary">Submit Reservation</button>
+                    <button type="submit" class="btn btn-primary" id="submitButton" onclick="hideButtonAndSubmit(this)">Submit Reservation</button>
+
+
                 </form>
             </div> 
         </div>
@@ -116,6 +132,10 @@
                 } else {
                     input.setCustomValidity('');
                 }
+            }
+            function hideButtonAndSubmit(button) {
+                button.style.display = 'none';
+                button.form.submit();
             }
         </script>
     </body>

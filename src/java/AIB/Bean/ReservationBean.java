@@ -29,17 +29,16 @@ public class ReservationBean implements Serializable {
         this.db = db;
     }
 
-    public Map<String, Integer> getAvailableFruits(long countryId) throws SQLException {
+    public Map<String, Integer> getAvailableFruits() throws SQLException {
         Map<String, Integer> fruits = new LinkedHashMap<>();
         String sql = "SELECT f.id, f.name, (SUM(ws.num) - COALESCE(SUM(rd.num), 0)) as available "
                 + "FROM fruit f "
                 + "JOIN warehouseStock ws ON f.id = ws.fruitid "
-                + "JOIN warehouse w ON ws.warehouseid = w.id AND w.countryid = ? "
+                + "JOIN warehouse w ON ws.warehouseid = w.id "
                 + "LEFT JOIN reserveDetail rd ON f.id = rd.fruitid "
                 + "LEFT JOIN reserve r ON rd.reserveid = r.id AND r.state = 'C' "
-                + "GROUP BY f.id, f.name";
+                + "GROUP BY f.id";
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, countryId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 String fruitName = rs.getString("name");
@@ -50,23 +49,23 @@ public class ReservationBean implements Serializable {
         return fruits;
     }
 
-    public boolean createReservation(long shopId, Map<Long, Integer> items) throws SQLException {
+    public long createReservation(long shopId, Map<Long, Integer> items, String reserveDT) throws SQLException {
         Connection conn = null;
         try {
             conn = db.getConnection();
             conn.setAutoCommit(false);
-
+    
             long reserveId = SnowflakeSingleton.getInstance().nextId();
-
+    
             // Create reserve record
             String reserveSql = "INSERT INTO reserve (id, Shopid, reserveDT, state) VALUES (?, ?, ?, 'C')";
             try (PreparedStatement stmt = conn.prepareStatement(reserveSql)) {
                 stmt.setLong(1, reserveId);
                 stmt.setLong(2, shopId);
-                stmt.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+                stmt.setTimestamp(3, Timestamp.valueOf(reserveDT + " 00:00:00")); // 將日期轉換為 Timestamp
                 stmt.executeUpdate();
             }
-
+    
             // Add reserve details
             String detailSql = "INSERT INTO reserveDetail (reserveid, fruitid, num) VALUES (?, ?, ?)";
             try (PreparedStatement stmt = conn.prepareStatement(detailSql)) {
@@ -78,9 +77,9 @@ public class ReservationBean implements Serializable {
                 }
                 stmt.executeBatch();
             }
-
+    
             conn.commit();
-            return true;
+            return reserveId;
         } catch (SQLException e) {
             if (conn != null) {
                 conn.rollback();

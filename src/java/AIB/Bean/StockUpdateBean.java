@@ -28,14 +28,20 @@ public class StockUpdateBean implements Serializable {
         this.db = db;
     }
 
-    public Map<Long, Integer> getShopStock(long shopId) throws SQLException {
-        Map<Long, Integer> stock = new HashMap<>();
-        String sql = "SELECT fruitid, num FROM shopStock WHERE shopid = ?";
+    public Map<Long, Map<String, Object>> getShopStock(long shopId) throws SQLException {
+        Map<Long, Map<String, Object>> stock = new HashMap<>();
+        String sql = "SELECT f.id AS fruitid, f.name, ss.num " +
+                     "FROM shopStock ss " +
+                     "JOIN fruit f ON ss.fruitid = f.id " +
+                     "WHERE ss.shopid = ?";
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, shopId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                stock.put(rs.getLong("fruitid"), rs.getInt("num"));
+                Map<String, Object> fruitData = new HashMap<>();
+                fruitData.put("name", rs.getString("name"));
+                fruitData.put("num", rs.getInt("num"));
+                stock.put(rs.getLong("fruitid"), fruitData);
             }
         }
         return stock;

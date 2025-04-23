@@ -24,7 +24,7 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author andyt
  */
-@WebServlet(name = "StockUpdateServlet", urlPatterns = {"/StockUpdateServlet", "/Shop/StockUpdate"})
+@WebServlet(name = "StockUpdateServlet", urlPatterns = { "/StockUpdateServlet", "/Shop/StockUpdate" })
 public class StockUpdateServlet extends HttpServlet {
 
     private StockUpdateBean stockBean;
@@ -35,8 +35,7 @@ public class StockUpdateServlet extends HttpServlet {
         ITP4511_DB db = new ITP4511_DB(
                 getServletContext().getInitParameter("dbUrl"),
                 getServletContext().getInitParameter("dbUser"),
-                getServletContext().getInitParameter("dbPassword")
-        );
+                getServletContext().getInitParameter("dbPassword"));
         stockBean = new StockUpdateBean(db);
     }
 
@@ -44,10 +43,10 @@ public class StockUpdateServlet extends HttpServlet {
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -66,14 +65,15 @@ public class StockUpdateServlet extends HttpServlet {
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the
+    // + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -86,7 +86,7 @@ public class StockUpdateServlet extends HttpServlet {
                 return;
             }
 
-            Map<Long, Integer> stock = stockBean.getShopStock(shopId);
+            Map<Long, Map<String, Object>> stock = stockBean.getShopStock(shopId);
             request.setAttribute("stock", stock);
             request.getRequestDispatcher("/Shop/updateStock.jsp").forward(request, response);
         } catch (SQLException e) {
@@ -97,10 +97,10 @@ public class StockUpdateServlet extends HttpServlet {
     /**
      * Handles the HTTP <code>POST</code> method.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -116,7 +116,7 @@ public class StockUpdateServlet extends HttpServlet {
                 if (param.startsWith("fruit_")) {
                     Long fruitId = Long.parseLong(param.substring(6));
                     int consumed = Integer.parseInt(request.getParameter(param));
-                    if (consumed > 0) {
+                    if (consumed != 0) {
                         updates.put(fruitId, consumed);
                     }
                 }

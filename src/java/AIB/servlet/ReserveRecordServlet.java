@@ -108,14 +108,20 @@ public class ReserveRecordServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            long reserveId = Long.parseLong(request.getParameter("reserveId"));
-            if (recordBean.completeReservation(reserveId)) {
-                response.sendRedirect("reserveRecords?success=1");
-            } else {
-                response.sendRedirect("reserveRecords?error=1");
+            HttpSession session = request.getSession();
+            Long shopId = (Long) session.getAttribute("shopId");
+            if (shopId == null) {
+                response.sendRedirect(request.getContextPath() + "/login.jsp");
+                return;
             }
-        } catch (Exception e) {
-            response.sendRedirect("reserveRecords?error=2");
+            long reserveId = Long.parseLong(request.getParameter("reserveId"));
+            if (recordBean.completeReservation(reserveId,shopId)) {
+                response.sendRedirect("ReserveRecordServlet?success="+reserveId);
+            } else {
+                response.sendRedirect("ReserveRecordServlet?error=1");
+            }
+        } catch (SQLException e) {
+            response.sendRedirect("ReserveRecordServlet?error=2");
         }
     }
 

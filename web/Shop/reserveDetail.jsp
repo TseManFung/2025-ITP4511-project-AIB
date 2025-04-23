@@ -6,6 +6,12 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%!
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+%>
 <!DOCTYPE html>
 <html>
     <head>
@@ -33,15 +39,41 @@
                     <div class="card-body">
                         <dl class="row">
                             <dt class="col-sm-3">Create Time:</dt>
-                            <dd class="col-sm-9"><%= request.getAttribute("details") != null ? ((Map) request.getAttribute("details")).get("DT") : ""%></dd>
-
+                            <dd class="col-sm-9">
+                                <%= request.getAttribute("details") != null ? dateFormat.format(((Map) request.getAttribute("details")).get("DT")) : "" %>
+                            </dd>
+                            
                             <dt class="col-sm-3">Reserve Time:</dt>
-                            <dd class="col-sm-9"><%= request.getAttribute("details") != null ? ((Map) request.getAttribute("details")).get("reserveDT") : ""%></dd>
-
+                            <dd class="col-sm-9">
+                                <%= request.getAttribute("details") != null ? dateFormat.format(((Map) request.getAttribute("details")).get("reserveDT")) : "" %>
+                            </dd>
                             <dt class="col-sm-3">Status:</dt>
                             <dd class="col-sm-9">
                                 <span class="state-badge state-<%= request.getAttribute("details") != null ? ((Map) request.getAttribute("details")).get("state") : ""%>">
-                                    <%= request.getAttribute("details") != null ? ((Map) request.getAttribute("details")).get("state") : ""%>
+                                    <%
+                                        String stateText = "Unknown";
+                                        if (request.getAttribute("details") != null) {
+                                            String state = (String) ((Map) request.getAttribute("details")).get("state");
+                                            switch (state) {
+                                                case "C":
+                                                    stateText = "Created";
+                                                    break;
+                                                case "A":
+                                                    stateText = "Approved";
+                                                    break;
+                                                case "R":
+                                                    stateText = "Rejected";
+                                                    break;
+                                                case "F":
+                                                    stateText = "Finished";
+                                                    break;
+                                                default:
+                                                    stateText = "Unknown";
+                                                    break;
+                                            }
+                                        }
+                                    %>
+                                    <%= stateText %>
                                 </span>
                             </dd>
                         </dl>
@@ -77,7 +109,7 @@
                     </div>
                 </div>
 
-                <a href="reserveRecords" class="btn btn-secondary mt-3">Back to List</a>
+                <a href="ReserveRecordServlet" class="btn btn-secondary mt-3">Back to List</a>
             </div> 
         </div>
         <!-- /content -->

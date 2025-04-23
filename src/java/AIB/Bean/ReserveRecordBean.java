@@ -35,10 +35,12 @@ public class ReserveRecordBean implements Serializable {
         String sql = "SELECT r.id, r.DT, r.reserveDT, r.state, COUNT(rd.fruitid) as itemCount "
                 + "FROM reserve r "
                 + "JOIN reserveDetail rd ON r.id = rd.reserveid "
-                + "WHERE r.Shopid = ? AND r.state != 'F' ";
+                + "WHERE r.Shopid = ? ";
 
         if (filterState != null && !filterState.isEmpty()) {
             sql += "AND r.state = ? ";
+        }else {
+            sql += "AND r.state != 'F' ";
         }
         sql += "GROUP BY r.id ";
 
@@ -77,11 +79,58 @@ public class ReserveRecordBean implements Serializable {
         return records;
     }
 
-    public boolean completeReservation(long reserveId) throws SQLException {
-        String sql = "UPDATE reserve SET state = 'F' WHERE id = ? AND state = 'A'";
-        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, reserveId);
-            return stmt.executeUpdate() > 0;
+    public boolean completeReservation(long reserveId,long shopId) throws SQLException {
+        String updateReserveSql = "UPDATE reserve SET state = 'F' WHERE id = ? AND state = 'A'";
+        String updateStockSql = "INSERT INTO shopStock (shopid, fruitid, num) " +
+                                 "VALUES (?, ?, ?) " +
+                                 "ON DUPLICATE KEY UPDATE num = num + VALUES(num)";
+        String getReserveDetailsSql = "SELECT fruitid, num FROM reserveDetail WHERE reserveid = ?";
+    
+        Connection conn = null;
+        try {
+            conn = db.getConnection();
+            conn.setAutoCommit(false); 
+    
+            try (PreparedStatement stmt = conn.prepareStatement(updateReserveSql)) {
+                stmt.setLong(1, reserveId);
+                int rowsUpdated = stmt.executeUpdate();
+                if (rowsUpdated == 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+    
+            try (PreparedStatement stmt = conn.prepareStatement(getReserveDetailsSql)) {
+                stmt.setLong(1, reserveId);
+                ResultSet rs = stmt.executeQuery();
+                try (PreparedStatement updateStockStmt = conn.prepareStatement(updateStockSql)) {
+                    while (rs.next()) {
+                        long fruitId = rs.getLong("fruitid");
+                        int num = rs.getInt("num");
+    
+                        updateStockStmt.setLong(1, shopId);
+                        updateStockStmt.setLong(2, fruitId);
+                        updateStockStmt.setInt(3, num);
+                        updateStockStmt.addBatch();
+                    }
+                    updateStockStmt.executeBatch();
+                }
+            }
+    
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            if (conn != null) {
+                conn.rollback(); 
+            }
+            System.err.println("Error completing reservation: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (conn != null) {
+                conn.setAutoCommit(true); 
+                conn.close();
+            }
         }
     }
 

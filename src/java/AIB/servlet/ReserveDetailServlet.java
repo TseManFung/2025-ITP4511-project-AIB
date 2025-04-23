@@ -13,6 +13,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.SQLException;
 import java.util.Map;
 
 /**
@@ -78,8 +79,8 @@ public class ReserveDetailServlet extends HttpServlet {
             Map<String, Object> details = recordBean.getReserveDetails(reserveId);
             request.setAttribute("details", details);
             request.getRequestDispatcher("/Shop/reserveDetail.jsp").forward(request, response);
-        } catch (Exception e) {
-            response.sendRedirect("reserveRecords?error=2");
+        } catch (SQLException e) {
+            response.sendRedirect("ReserveRecordServlet?error=2");
         }
     }
 

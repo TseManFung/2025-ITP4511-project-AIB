@@ -87,7 +87,7 @@ public class ReserveServlet extends HttpServlet {
                 return;
             }
 
-            Map<String, Integer> fruits = reservationBean.getAvailableFruits(countryId);
+            Map<String, Integer> fruits = reservationBean.getAvailableFruits();
             request.setAttribute("fruits", fruits);
             request.getRequestDispatcher("/Shop/reserve.jsp").forward(request, response);
         } catch (SQLException e) {
@@ -104,34 +104,37 @@ public class ReserveServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        Long shopId = (Long) session.getAttribute("shopId");
-        Map<Long, Integer> items = new HashMap<>();
+protected void doPost(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    HttpSession session = request.getSession();
+    Long shopId = (Long) session.getAttribute("shopId");
+    Map<Long, Integer> items = new HashMap<>();
 
-        Enumeration<String> params = request.getParameterNames();
-        while (params.hasMoreElements()) {
-            String param = params.nextElement();
-            if (param.startsWith("fruit_")) {
-                Long fruitId = Long.parseLong(param.substring(6));
-                int qty = Integer.parseInt(request.getParameter(param));
-                if (qty > 0) {
-                    items.put(fruitId, qty);
-                }
+    Enumeration<String> params = request.getParameterNames();
+    while (params.hasMoreElements()) {
+        String param = params.nextElement();
+        if (param.startsWith("fruit_")) {
+            Long fruitId = Long.parseLong(param.substring(6));
+            int qty = Integer.parseInt(request.getParameter(param));
+            if (qty > 0) {
+                items.put(fruitId, qty);
             }
-        }
-
-        try {
-            if (!items.isEmpty() && reservationBean.createReservation(shopId, items)) {
-                response.sendRedirect("reserveSuccess.jsp");
-            } else {
-                response.sendRedirect("reserve.jsp?error=1");
-            }
-        } catch (SQLException e) {
-            response.sendRedirect("reserve.jsp?error=2");
         }
     }
+
+    String reserveDT = request.getParameter("reserveDT"); // 獲取 reserveDT
+
+    try {
+        if (!items.isEmpty() && reserveDT != null) {
+            long id = reservationBean.createReservation(shopId, items, reserveDT); // 傳遞 reserveDT
+            response.sendRedirect("ReserveServlet?success=" + id);
+        } else {
+            response.sendRedirect("ReserveServlet?error=1");
+        }
+    } catch (SQLException e) {
+        response.sendRedirect("ReserveServlet?error=2");
+    }
+}
 
     /**
      * Returns a short description of the servlet.
