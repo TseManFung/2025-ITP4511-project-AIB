@@ -6,6 +6,13 @@ package AIB.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+
+import AIB.Bean.BorrowBean;
+import AIB.db.ITP4511_DB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,17 +23,28 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @author andyt
  */
-@WebServlet(name = "BorrowServlet", urlPatterns = {"/BorrowServlet"})
+@WebServlet(name = "BorrowServlet", urlPatterns = { "/BorrowServlet" })
 public class BorrowServlet extends HttpServlet {
+    private BorrowBean borrowBean;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        ITP4511_DB db = new ITP4511_DB(
+                getServletContext().getInitParameter("dbUrl"),
+                getServletContext().getInitParameter("dbUser"),
+                getServletContext().getInitParameter("dbPassword"));
+        borrowBean = new BorrowBean(db);
+    }
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -45,33 +63,74 @@ public class BorrowServlet extends HttpServlet {
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the
+    // + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            HttpSession session = request.getSession();
+            Long currentShopId = (Long) session.getAttribute("shopId");
+            Long cityId = (Long) session.getAttribute("cityId");
+            
+            if (currentShopId == null || cityId == null) {
+                response.sendRedirect("../login.jsp");
+                return;
+            }
+            
+            Map<String, Map<String, Object>> stocks = borrowBean.getCityShopsStock(currentShopId, cityId);
+            request.setAttribute("stocks", stocks);
+            request.getRequestDispatcher("/Shop/borrow.jsp").forward(request, response);
+        } catch (SQLException e) {
+            throw new ServletException("Database error", e);
+        }
     }
 
     /**
      * Handles the HTTP <code>POST</code> method.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        HttpSession session = request.getSession();
+        Long sourceShopId = (Long) session.getAttribute("shopId");
+        Long destShopId = Long.parseLong(request.getParameter("destShopId"));
+        Map<Long, Integer> items = new HashMap<>();
+
+        Enumeration<String> params = request.getParameterNames();
+        while (params.hasMoreElements()) {
+            String param = params.nextElement();
+            if (param.startsWith("fruit_")) {
+                Long fruitId = Long.parseLong(param.substring(6));
+                int qty = Integer.parseInt(request.getParameter(param));
+                if (qty > 0) {
+                    items.put(fruitId, qty);
+                }
+            }
+        }
+
+        try {
+            if (!items.isEmpty() && borrowBean.createBorrowRequest(sourceShopId, destShopId, items)) {
+                response.sendRedirect("borrowSuccess.jsp");
+            } else {
+                response.sendRedirect("borrow.jsp?error=1");
+            }
+        } catch (SQLException e) {
+            response.sendRedirect("borrow.jsp?error=2");
+        }
     }
 
     /**

@@ -6,39 +6,86 @@ package AIB.Bean;
 
 import java.beans.*;
 import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import AIB.algorithm.SnowflakeSingleton;
+import AIB.db.ITP4511_DB;
 
 /**
  *
  * @author andyt
  */
 public class ReservationBean implements Serializable {
-    
-    public static final String PROP_SAMPLE_PROPERTY = "sampleProperty";
-    
-    private String sampleProperty;
-    
-    private PropertyChangeSupport propertySupport;
-    
-    public ReservationBean() {
-        propertySupport = new PropertyChangeSupport(this);
+  private final ITP4511_DB db;
+
+    public ReservationBean(ITP4511_DB db) {
+        this.db = db;
     }
-    
-    public String getSampleProperty() {
-        return sampleProperty;
+
+    public Map<String, Integer> getAvailableFruits(long countryId) throws SQLException {
+        Map<String, Integer> fruits = new LinkedHashMap<>();
+        String sql = "SELECT f.id, f.name, (SUM(ws.num) - COALESCE(SUM(rd.num), 0)) as available "
+                   + "FROM fruit f "
+                   + "JOIN warehouseStock ws ON f.id = ws.fruitid "
+                   + "JOIN warehouse w ON ws.warehouseid = w.id AND w.countryid = ? "
+                   + "LEFT JOIN reserveDetail rd ON f.id = rd.fruitid "
+                   + "LEFT JOIN reserve r ON rd.reserveid = r.id AND r.state = 'C' "
+                   + "GROUP BY f.id, f.name";
+        try (Connection conn = db.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, countryId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String fruitName = rs.getString("name");
+                int available = rs.getInt("available");
+                fruits.put(fruitName + "|" + rs.getLong("id"), available);
+            }
+        }
+        return fruits;
     }
-    
-    public void setSampleProperty(String value) {
-        String oldValue = sampleProperty;
-        sampleProperty = value;
-        propertySupport.firePropertyChange(PROP_SAMPLE_PROPERTY, oldValue, sampleProperty);
+
+    public boolean createReservation(long shopId, Map<Long, Integer> items) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = db.getConnection();
+            conn.setAutoCommit(false);
+
+            long reserveId = SnowflakeSingleton.getInstance().nextId();
+            
+            // Create reserve record
+            String reserveSql = "INSERT INTO reserve (id, Shopid, reserveDT, state) VALUES (?, ?, ?, 'C')";
+            try (PreparedStatement stmt = conn.prepareStatement(reserveSql)) {
+                stmt.setLong(1, reserveId);
+                stmt.setLong(2, shopId);
+                stmt.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+                stmt.executeUpdate();
+            }
+
+            // Add reserve details
+            String detailSql = "INSERT INTO reserveDetail (reserveid, fruitid, num) VALUES (?, ?, ?)";
+            try (PreparedStatement stmt = conn.prepareStatement(detailSql)) {
+                for (Map.Entry<Long, Integer> entry : items.entrySet()) {
+                    stmt.setLong(1, reserveId);
+                    stmt.setLong(2, entry.getKey());
+                    stmt.setInt(3, entry.getValue());
+                    stmt.addBatch();
+                }
+                stmt.executeBatch();
+            }
+            
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            if (conn != null) conn.rollback();
+            throw e;
+        } finally {
+            if (conn != null) conn.close();
+        }
     }
-    
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertySupport.addPropertyChangeListener(listener);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertySupport.removePropertyChangeListener(listener);
-    }
-    
 }
