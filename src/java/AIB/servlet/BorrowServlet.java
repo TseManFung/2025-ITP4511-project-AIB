@@ -24,8 +24,9 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author andyt
  */
-@WebServlet(name = "BorrowServlet", urlPatterns = { "/BorrowServlet","/Shop/Borrow" })
+@WebServlet(name = "BorrowServlet", urlPatterns = {"/BorrowServlet", "/Shop/Borrow"})
 public class BorrowServlet extends HttpServlet {
+
     private BorrowBean borrowBean;
 
     @Override
@@ -42,10 +43,10 @@ public class BorrowServlet extends HttpServlet {
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
      *
-     * @param request  servlet request
+     * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException      if an I/O error occurs
+     * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -69,10 +70,10 @@ public class BorrowServlet extends HttpServlet {
     /**
      * Handles the HTTP <code>GET</code> method.
      *
-     * @param request  servlet request
+     * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException      if an I/O error occurs
+     * @throws IOException if an I/O error occurs
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -81,12 +82,12 @@ public class BorrowServlet extends HttpServlet {
             HttpSession session = request.getSession();
             Long currentShopId = (Long) session.getAttribute("shopId");
             Long cityId = (Long) session.getAttribute("cityId");
-            
+
             if (currentShopId == null || cityId == null) {
-                response.sendRedirect(request.getContextPath()+"/login.jsp");
+                response.sendRedirect(request.getContextPath() + "/login.jsp");
                 return;
             }
-            
+
             Map<String, Map<String, Object>> stocks = borrowBean.getCityShopsStock(currentShopId, cityId);
             request.setAttribute("stocks", stocks);
             request.getRequestDispatcher("/Shop/borrow.jsp").forward(request, response);
@@ -98,10 +99,10 @@ public class BorrowServlet extends HttpServlet {
     /**
      * Handles the HTTP <code>POST</code> method.
      *
-     * @param request  servlet request
+     * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException      if an I/O error occurs
+     * @throws IOException if an I/O error occurs
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

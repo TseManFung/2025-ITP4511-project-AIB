@@ -15,6 +15,7 @@ import AIB.algorithm.SnowflakeSingleton;
 
 @WebServlet("/fruitServlet")
 public class FruitServlet extends HttpServlet {
+
     private ITP4511_DB db;
 
     // Initialize database connection
@@ -30,7 +31,9 @@ public class FruitServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        if (action == null) action = "list";
+        if (action == null) {
+            action = "list";
+        }
 
         // Check user type (only Senior Management 'S' can access)
         HttpSession session = request.getSession(false);
@@ -82,9 +85,7 @@ public class FruitServlet extends HttpServlet {
     private void listFruits(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         List<FruitBean> fruits = new ArrayList<>();
-        try (Connection conn = db.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT * FROM fruit")) {
+        try (Connection conn = db.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM fruit")) {
             while (rs.next()) {
                 FruitBean fruit = new FruitBean();
                 fruit.setId(rs.getLong("id"));
@@ -116,8 +117,7 @@ public class FruitServlet extends HttpServlet {
         FruitBean fruit = null;
         Map<Long, String> countries = getCountries();
 
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM fruit WHERE id = ?")) {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM fruit WHERE id = ?")) {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -142,11 +142,10 @@ public class FruitServlet extends HttpServlet {
         Long sourceCountryId = Long.parseLong(request.getParameter("sourceCountryId"));
         String name = request.getParameter("name");
         String unit = request.getParameter("unit");
-  
+
         Long id = SnowflakeSingleton.getInstance().nextId();
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT INTO fruit (id,sourceCountryid, name, unit) VALUES (?,?, ?, ?)")) {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(
+                "INSERT INTO fruit (id,sourceCountryid, name, unit) VALUES (?,?, ?, ?)")) {
             stmt.setLong(1, id);
             stmt.setLong(2, sourceCountryId);
             stmt.setString(3, name);
@@ -169,9 +168,8 @@ public class FruitServlet extends HttpServlet {
         String name = request.getParameter("name");
         String unit = request.getParameter("unit");
 
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "UPDATE fruit SET sourceCountryid = ?, name = ?, unit = ? WHERE id = ?")) {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE fruit SET sourceCountryid = ?, name = ?, unit = ? WHERE id = ?")) {
             stmt.setLong(1, sourceCountryId);
             stmt.setString(2, name);
             stmt.setString(3, unit);
@@ -190,8 +188,7 @@ public class FruitServlet extends HttpServlet {
     private void deleteFruit(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         Long id = Long.parseLong(request.getParameter("id"));
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("DELETE FROM fruit WHERE id = ?")) {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement("DELETE FROM fruit WHERE id = ?")) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -204,9 +201,7 @@ public class FruitServlet extends HttpServlet {
     // Helper method to fetch countries
     private Map<Long, String> getCountries() {
         Map<Long, String> countries = new LinkedHashMap<>();
-        try (Connection conn = db.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT id, name FROM country")) {
+        try (Connection conn = db.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT id, name FROM country")) {
             while (rs.next()) {
                 countries.put(rs.getLong("id"), rs.getString("name"));
             }

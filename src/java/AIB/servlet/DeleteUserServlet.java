@@ -9,6 +9,7 @@ import java.sql.*;
 
 @WebServlet("/deleteUserServlet")
 public class DeleteUserServlet extends HttpServlet {
+
     private ITP4511_DB db;
 
     @Override
@@ -21,7 +22,7 @@ public class DeleteUserServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession(false);
         if (session == null || !"S".equals(session.getAttribute("userType"))) {
             response.sendRedirect("login.jsp?error=access_denied");
@@ -29,20 +30,19 @@ public class DeleteUserServlet extends HttpServlet {
         }
 
         String loginName = request.getParameter("loginName");
-        
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                 "UPDATE user SET type = 'D' WHERE loginName = ?")) {
-            
+
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE user SET type = 'D' WHERE loginName = ?")) {
+
             stmt.setString(1, loginName);
             int rowsAffected = stmt.executeUpdate();
-            
+
             if (rowsAffected > 0) {
                 response.sendRedirect("userListServlet?message=delete_success");
             } else {
                 response.sendRedirect("userListServlet?error=user_not_found");
             }
-            
+
         } catch (SQLException e) {
             e.printStackTrace();
             response.sendRedirect("userListServlet?error=database_error");

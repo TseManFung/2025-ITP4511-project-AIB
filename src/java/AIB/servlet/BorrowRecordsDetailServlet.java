@@ -4,6 +4,8 @@
  */
 package AIB.servlet;
 
+import AIB.Bean.BorrowRecordsBean;
+import AIB.db.ITP4511_DB;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -11,13 +13,25 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 /**
  *
  * @author andyt
  */
-@WebServlet(name = "BorrowRecordsDetailServlet", urlPatterns = {"/BorrowRecordsDetailServlet"})
+@WebServlet(name = "BorrowRecordsDetailServlet", urlPatterns = {"/BorrowRecordsDetailServlet", "/Shop/BorrowRecordsDetail"})
 public class BorrowRecordsDetailServlet extends HttpServlet {
+
+    private BorrowRecordsBean recordsBean;
+
+    @Override
+    public void init() throws ServletException {
+        ITP4511_DB db = new ITP4511_DB(
+                getServletContext().getInitParameter("dbUrl"),
+                getServletContext().getInitParameter("dbUser"),
+                getServletContext().getInitParameter("dbPassword"));
+        recordsBean = new BorrowRecordsBean(db);
+    }
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -57,7 +71,15 @@ public class BorrowRecordsDetailServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        long recordId = Long.parseLong(request.getParameter("id"));
+
+        try {
+            Map<String, Object> details = recordsBean.getRecordDetails(recordId);
+            request.setAttribute("detail", details);
+            request.getRequestDispatcher("/Shop/borrowRecordDetail.jsp").forward(request, response);
+        } catch (Exception e) {
+            throw new ServletException("Database error", e);
+        }
     }
 
     /**

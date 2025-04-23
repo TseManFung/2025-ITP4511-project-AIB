@@ -1,4 +1,4 @@
-   /*
+/*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
@@ -24,17 +24,18 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author andyt
  */
-@WebServlet(name = "StockUpdateServlet", urlPatterns = {"/StockUpdateServlet","/Shop/StockUpdate"})
+@WebServlet(name = "StockUpdateServlet", urlPatterns = {"/StockUpdateServlet", "/Shop/StockUpdate"})
 public class StockUpdateServlet extends HttpServlet {
+
     private StockUpdateBean stockBean;
 
     @Override
     public void init() throws ServletException {
         super.init();
         ITP4511_DB db = new ITP4511_DB(
-            getServletContext().getInitParameter("dbUrl"),
-            getServletContext().getInitParameter("dbUser"),
-            getServletContext().getInitParameter("dbPassword")
+                getServletContext().getInitParameter("dbUrl"),
+                getServletContext().getInitParameter("dbUser"),
+                getServletContext().getInitParameter("dbPassword")
         );
         stockBean = new StockUpdateBean(db);
     }
@@ -81,10 +82,10 @@ public class StockUpdateServlet extends HttpServlet {
             HttpSession session = request.getSession();
             Long shopId = (Long) session.getAttribute("shopId");
             if (shopId == null) {
-                response.sendRedirect(request.getContextPath()+"/login.jsp");
+                response.sendRedirect(request.getContextPath() + "/login.jsp");
                 return;
             }
-            
+
             Map<Long, Integer> stock = stockBean.getShopStock(shopId);
             request.setAttribute("stock", stock);
             request.getRequestDispatcher("/Shop/updateStock.jsp").forward(request, response);
@@ -125,7 +126,7 @@ public class StockUpdateServlet extends HttpServlet {
             request.setAttribute("original", result.get("original"));
             request.setAttribute("updated", result.get("updated"));
             request.getRequestDispatcher("/Shop/updateResult.jsp").forward(request, response);
-            
+
         } catch (Exception e) {
             response.sendRedirect("updateStock?error=1");
         }

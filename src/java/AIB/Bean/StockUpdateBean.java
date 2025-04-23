@@ -21,7 +21,7 @@ import AIB.db.ITP4511_DB;
  * @author andyt
  */
 public class StockUpdateBean implements Serializable {
-    
+
     private final ITP4511_DB db;
 
     public StockUpdateBean(ITP4511_DB db) {
@@ -31,8 +31,7 @@ public class StockUpdateBean implements Serializable {
     public Map<Long, Integer> getShopStock(long shopId) throws SQLException {
         Map<Long, Integer> stock = new HashMap<>();
         String sql = "SELECT fruitid, num FROM shopStock WHERE shopid = ?";
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, shopId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -52,14 +51,16 @@ public class StockUpdateBean implements Serializable {
             // Get original values
             Map<Long, Integer> original = getShopStock(shopId);
             result.put("original", original);
-            
+
             // Update shopStock
             String updateSql = "UPDATE shopStock SET num = ? WHERE shopid = ? AND fruitid = ?";
             try (PreparedStatement stmt = conn.prepareStatement(updateSql)) {
                 for (Map.Entry<Long, Integer> entry : updates.entrySet()) {
                     int newValue = original.get(entry.getKey()) - entry.getValue();
-                    if (newValue < 0) throw new SQLException("Negative stock not allowed");
-                    
+                    if (newValue < 0) {
+                        throw new SQLException("Negative stock not allowed");
+                    }
+
                     stmt.setInt(1, newValue);
                     stmt.setLong(2, shopId);
                     stmt.setLong(3, entry.getKey());
@@ -93,11 +94,15 @@ public class StockUpdateBean implements Serializable {
             result.put("updated", getShopStock(shopId));
             return result;
         } catch (SQLException e) {
-            if (conn != null) conn.rollback();
+            if (conn != null) {
+                conn.rollback();
+            }
             throw e;
         } finally {
-            if (conn != null) conn.close();
+            if (conn != null) {
+                conn.close();
+            }
         }
     }
-    
+
 }

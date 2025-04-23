@@ -1,96 +1,123 @@
-<%-- 
-    Document   : borrowRecords
-    Created on : 2025年4月23日, 下午7:23:30
-    Author     : andyt
---%>
+<%-- Document : borrowRecords Created on : 2025年4月23日, 下午7:23:30 Author : andyt --%>
 
+<%@page import="java.util.List"%>
+<%@page import="java.util.Map"%>
 <%@ page contentType="text/html; charset=UTF-8" %>
-<%@ page isELIgnored="false" %>
+<%@ page isELIgnored="true" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <!DOCTYPE html>
 <html>
-<head>
-<jsp:include page="/component/head.jsp" />
-<title>page name</title>
-<style>
+
+    <head>
+        <jsp:include page="/component/head.jsp" />
+        <title>Borrow record</title>
+        <style>
             .state-badge {
                 padding: 0.25em 0.4em;
                 border-radius: 0.25rem;
             }
-            .state-C { background-color: #0d6efd; }
-            .state-A { background-color: #198754; }
-            .state-R { background-color: #dc3545; }
+
+            .state-C {
+                background-color: blue;
+            }
+
+            .state-A {
+                background-color: greenyellow;
+            }
+
+            .state-R {
+                background-color: #dc3545;
+            }
+
+            .state-F {
+                background-color: grey;
+            }
         </style>
 
-</head>
-<body>
-  <jsp:include page="/component/modal.jsp" />
-  
- <component:Managementnavbar/>
+    </head>
 
-  <!-- header -->
-  <div style="height: calc(0lvh + 128px)" id="header"></div>
-  <!-- /header -->
+    <body>
+        <jsp:include page="/component/modal.jsp" />
 
-  <!-- content -->
-  <div class="d-flex position-relative content-bg justify-content-center">
-    <div class="container">
-      <h3 class="mb-4">Borrow Records Management</h3>
-            
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Date</th>
-                        <th>From Shop</th>
-                        <th>To Shop</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <c:forEach items="${records}" var="record">
+        <component:navbar />
+
+        <!-- header -->
+        <div style="height: calc(0lvh + 128px)" id="header"></div>
+        <!-- /header -->
+        <%
+            // 從 request 中獲取 records
+            List<Map<String, Object>> records = (List<Map<String, Object>>) request.getAttribute("records");
+        %>
+        <!-- content -->
+        <div class="d-flex position-relative content-bg justify-content-center">
+            <div class="container">
+                <h3 class="mb-4">Borrow Records Management</h3>
+
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <td>${record.DT}</td>
-                            <td>${record.fromShop}</td>
-                            <td>${record.toShop}</td>
+                            <th>Date</th>
+                            <th>From Shop</th>
+                            <th>To Shop</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (records != null) { %>
+                        <% for (Object recordObj : records) {
+                                Record record = (Record) recordObj;%>
+                        <tr>
+                            <td><%= record.getDT()%></td>
+                            <td><%= record.getFromShop()%></td>
+                            <td><%= record.getToShop()%></td>
                             <td>
-                                <span class="state-badge state-${record.state} text-white">
-                                    <c:choose>
-                                        <c:when test="${record.state == 'C'}">Pending</c:when>
-                                        <c:when test="${record.state == 'A'}">Approved</c:when>
-                                        <c:when test="${record.state == 'R'}">Rejected</c:when>
-                                    </c:choose>
+                                <span class="state-badge state-<%= record.getState()%> text-white">
+                                    <% String state = record.getState();
+                                        if ("C".equals(state)) { %>
+                                    Pending
+                                    <% } else if ("A".equals(state)) { %>
+                                    Approved
+                                    <% } else if ("R".equals(state)) { %>
+                                    Rejected
+                                    <% }%>
                                 </span>
                             </td>
                             <td>
-                                <a href="BorrowRecordsDetail?id=${record.id}" 
-                                   class="btn btn-sm btn-outline-primary">View</a>
-                                <c:if test="${record.state == 'A'}">
-                                    <form method="post" class="d-inline">
-                                        <input type="hidden" name="recordId" value="${record.id}">
-                                        <button type="submit" name="action" value="complete" 
-                                                class="btn btn-sm btn-success ms-2">Complete</button>
-                                    </form>
-                                </c:if>
+                                <a href="BorrowRecordsDetail?id=<%= record.getId()%>" class="btn btn-sm btn-outline-primary">View</a>
+                                <% if ("A".equals(record.getState())) {%>
+                                <form method="post" class="d-inline">
+                                    <input type="hidden" name="recordId" value="<%= record.getId()%>">
+                                    <button type="submit" name="action" value="complete" class="btn btn-sm btn-success ms-2">Complete</button>
+                                </form>
+                                <% } %>
                             </td>
                         </tr>
-                    </c:forEach>
-                </tbody>
-            </table>
+                        <% } %>
+                        <% } else { %>
+                        <tr>
+                            <td colspan="5" class="text-center">No records found.</td>
+                        </tr>
+                        <% }%>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div> 
-  </div>
-  <!-- /content -->
+    </div>
+    <!-- /content -->
 
-  <!-- GoToTop -->
-  <div id="page-top" style="">
-    <a href="#header"><img src="${pageContext.request.contextPath}/images/common/returan-top.png" /></a>
-  </div>
-  <!-- /GoToTop -->
+    <!-- GoToTop -->
+    <div id="page-top" style="">
+        <a href="#header"><img
+                src="<%= pageContext.getRequest().getContextPath()%>/images/common/returan-top.png" /></a>
+    </div>
+    <!-- /GoToTop -->
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>      
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+    <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
 </body>
+
 </html>

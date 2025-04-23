@@ -8,25 +8,11 @@
     <body>
         <%
             // Check if user role exists in session
-            String userRole = (String) session.getAttribute("role");
+            String userRole = (String) session.getAttribute("userType");
             
             if (userRole != null) {
-                switch(userRole) {
-                    case "B": // Bakery shop staff
-                        response.sendRedirect("bakeryStaffDashboard.jsp");
-                        break;
-                    case "W": // Warehouse Staff
-                        response.sendRedirect("warehouseStaffDashboard.jsp");
-                        break;
-                    case "S": // Senior Management
-                        response.sendRedirect("managementDashboard.jsp");
-                        break;
-                    default: // deleted role
-                        response.sendRedirect("login.jsp");
-                        break;
-                }
+                response.sendRedirect("login.jsp?action=home");
             } else {
-                // No role in session - go to login
                 response.sendRedirect("login.jsp");
             }
         %>

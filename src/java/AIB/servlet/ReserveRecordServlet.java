@@ -23,8 +23,9 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author andyt
  */
-@WebServlet(name = "ReserveRecordServlet", urlPatterns = { "/ReserveRecordServlet","/Shop/ReserveRecord" })
+@WebServlet(name = "ReserveRecordServlet", urlPatterns = {"/ReserveRecordServlet", "/Shop/ReserveRecord"})
 public class ReserveRecordServlet extends HttpServlet {
+
     private ReserveRecordBean recordBean;
 
     @Override
@@ -41,10 +42,10 @@ public class ReserveRecordServlet extends HttpServlet {
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
      *
-     * @param request  servlet request
+     * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException      if an I/O error occurs
+     * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -68,10 +69,10 @@ public class ReserveRecordServlet extends HttpServlet {
     /**
      * Handles the HTTP <code>GET</code> method.
      *
-     * @param request  servlet request
+     * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException      if an I/O error occurs
+     * @throws IOException if an I/O error occurs
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -80,7 +81,7 @@ public class ReserveRecordServlet extends HttpServlet {
             HttpSession session = request.getSession();
             Long shopId = (Long) session.getAttribute("shopId");
             if (shopId == null) {
-                response.sendRedirect(request.getContextPath()+"/login.jsp");
+                response.sendRedirect(request.getContextPath() + "/login.jsp");
                 return;
             }
 
@@ -98,10 +99,10 @@ public class ReserveRecordServlet extends HttpServlet {
     /**
      * Handles the HTTP <code>POST</code> method.
      *
-     * @param request  servlet request
+     * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException      if an I/O error occurs
+     * @throws IOException if an I/O error occurs
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

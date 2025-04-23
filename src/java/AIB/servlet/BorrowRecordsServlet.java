@@ -4,6 +4,8 @@
  */
 package AIB.servlet;
 
+import AIB.Bean.BorrowRecordsBean;
+import AIB.db.ITP4511_DB;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -11,13 +13,25 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  *
  * @author andyt
  */
-@WebServlet(name = "BorrowRecordsServlet", urlPatterns = {"/BorrowRecordsServlet"})
+@WebServlet(name = "BorrowRecordsServlet", urlPatterns = {"/BorrowRecordsServlet", "/Shop/BorrowRecords"})
 public class BorrowRecordsServlet extends HttpServlet {
+
+    private BorrowRecordsBean recordsBean;
+
+    @Override
+    public void init() throws ServletException {
+        ITP4511_DB db = new ITP4511_DB(
+                getServletContext().getInitParameter("dbUrl"),
+                getServletContext().getInitParameter("dbUser"),
+                getServletContext().getInitParameter("dbPassword"));
+        recordsBean = new BorrowRecordsBean(db);
+    }
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -57,7 +71,15 @@ public class BorrowRecordsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        HttpSession session = request.getSession();
+        Long shopId = (Long) session.getAttribute("shopId");
+
+        try {
+            request.setAttribute("records", recordsBean.getBorrowRecords(shopId));
+            request.getRequestDispatcher("/Shop/borrowRecords.jsp").forward(request, response);
+        } catch (Exception e) {
+            throw new ServletException("Database error", e);
+        }
     }
 
     /**
@@ -71,7 +93,27 @@ public class BorrowRecordsServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        HttpSession session = request.getSession();
+        Long shopId = (Long) session.getAttribute("shopId");
+        String action = request.getParameter("action");
+        long recordId = Long.parseLong(request.getParameter("recordId"));
+
+        try {
+            switch (action) {
+                case "approve":
+                    recordsBean.updateRecordState(recordId, "A", shopId);
+                    break;
+                case "reject":
+                    recordsBean.updateRecordState(recordId, "R", shopId);
+                    break;
+                case "complete":
+                    recordsBean.updateRecordState(recordId, "F", shopId);
+                    break;
+            }
+            response.sendRedirect("BorrowRecords");
+        } catch (Exception e) {
+            response.sendRedirect("borrowRecords.jsp?error=1");
+        }
     }
 
     /**

@@ -4,6 +4,8 @@
  */
 package AIB.servlet;
 
+import AIB.Bean.ReserveRecordBean;
+import AIB.db.ITP4511_DB;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -11,25 +13,28 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 /**
  *
  * @author andyt
  */
-@WebServlet(name = "ReserveDetailServlet", urlPatterns = {"/ReserveDetailServlet"})
+@WebServlet(name = "ReserveDetailServlet", urlPatterns = {"/ReserveDetailServlet","/Shop/ReserveDetail"})
 public class ReserveDetailServlet extends HttpServlet {
- private ReserveRecordBean recordBean;
+
+    private ReserveRecordBean recordBean;
 
     @Override
     public void init() throws ServletException {
         super.init();
         ITP4511_DB db = new ITP4511_DB(
-            getServletContext().getInitParameter("dbUrl"),
-            getServletContext().getInitParameter("dbUser"),
-            getServletContext().getInitParameter("dbPassword")
+                getServletContext().getInitParameter("dbUrl"),
+                getServletContext().getInitParameter("dbUser"),
+                getServletContext().getInitParameter("dbPassword")
         );
         recordBean = new ReserveRecordBean(db);
     }
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -68,7 +73,7 @@ public class ReserveDetailServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-                try {
+        try {
             long reserveId = Long.parseLong(request.getParameter("id"));
             Map<String, Object> details = recordBean.getReserveDetails(reserveId);
             request.setAttribute("details", details);

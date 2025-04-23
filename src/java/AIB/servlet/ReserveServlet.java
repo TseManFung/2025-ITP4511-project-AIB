@@ -24,7 +24,7 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author andyt
  */
-@WebServlet(name = "ReserveServlet", urlPatterns = {"/ReserveServlet","/Shop/Reserve"})
+@WebServlet(name = "ReserveServlet", urlPatterns = {"/ReserveServlet", "/Shop/Reserve"})
 public class ReserveServlet extends HttpServlet {
 
     private ReservationBean reservationBean;
@@ -33,13 +33,12 @@ public class ReserveServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         ITP4511_DB db = new ITP4511_DB(
-            getServletContext().getInitParameter("dbUrl"),
-            getServletContext().getInitParameter("dbUser"),
-            getServletContext().getInitParameter("dbPassword")
+                getServletContext().getInitParameter("dbUrl"),
+                getServletContext().getInitParameter("dbUser"),
+                getServletContext().getInitParameter("dbPassword")
         );
         reservationBean = new ReservationBean(db);
     }
-
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -82,12 +81,12 @@ public class ReserveServlet extends HttpServlet {
         try {
             HttpSession session = request.getSession();
             Long countryId = (Long) session.getAttribute("countryId");
-            
+
             if (countryId == null) {
-                response.sendRedirect(request.getContextPath()+"/login.jsp");
+                response.sendRedirect(request.getContextPath() + "/login.jsp");
                 return;
             }
-            
+
             Map<String, Integer> fruits = reservationBean.getAvailableFruits(countryId);
             request.setAttribute("fruits", fruits);
             request.getRequestDispatcher("/Shop/reserve.jsp").forward(request, response);
@@ -107,7 +106,7 @@ public class ReserveServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-         HttpSession session = request.getSession();
+        HttpSession session = request.getSession();
         Long shopId = (Long) session.getAttribute("shopId");
         Map<Long, Integer> items = new HashMap<>();
 

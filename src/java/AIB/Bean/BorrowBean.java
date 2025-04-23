@@ -22,6 +22,7 @@ import AIB.db.ITP4511_DB;
  * @author andyt
  */
 public class BorrowBean implements Serializable {
+
     private final ITP4511_DB db;
 
     public BorrowBean(ITP4511_DB db) {
@@ -31,17 +32,16 @@ public class BorrowBean implements Serializable {
     public Map<String, Map<String, Object>> getCityShopsStock(long currentShopId, long cityId) throws SQLException {
         Map<String, Map<String, Object>> result = new LinkedHashMap<>();
         String sql = "SELECT s.id AS shopId, s.name AS shopName, f.id AS fruitId, f.name AS fruitName, ss.num "
-                   + "FROM shop s "
-                   + "JOIN shopStock ss ON s.id = ss.shopid "
-                   + "JOIN fruit f ON ss.fruitid = f.id "
-                   + "WHERE s.cityid = ? AND s.id != ?";
-        
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                + "FROM shop s "
+                + "JOIN shopStock ss ON s.id = ss.shopid "
+                + "JOIN fruit f ON ss.fruitid = f.id "
+                + "WHERE s.cityid = ? AND s.id != ?";
+
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, cityId);
             stmt.setLong(2, currentShopId);
             ResultSet rs = stmt.executeQuery();
-            
+
             while (rs.next()) {
                 String key = rs.getLong("shopId") + "|" + rs.getLong("fruitId");
                 Map<String, Object> item = new HashMap<>();
@@ -61,7 +61,7 @@ public class BorrowBean implements Serializable {
             conn.setAutoCommit(false);
 
             long borrowId = SnowflakeSingleton.getInstance().nextId();
-            
+
             // Create borrow record
             String borrowSql = "INSERT INTO borrow (id, sourceShopid, destinationShopid, state) VALUES (?, ?, ?, 'C')";
             try (PreparedStatement stmt = conn.prepareStatement(borrowSql)) {
@@ -82,15 +82,19 @@ public class BorrowBean implements Serializable {
                 }
                 stmt.executeBatch();
             }
-            
+
             conn.commit();
             return true;
         } catch (SQLException e) {
-            if (conn != null) conn.rollback();
+            if (conn != null) {
+                conn.rollback();
+            }
             throw e;
         } finally {
-            if (conn != null) conn.close();
+            if (conn != null) {
+                conn.close();
+            }
         }
     }
-    
+
 }

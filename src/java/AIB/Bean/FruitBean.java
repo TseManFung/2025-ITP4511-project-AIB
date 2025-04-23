@@ -3,13 +3,15 @@ package AIB.Bean;
 import java.io.Serializable;
 
 public class FruitBean implements Serializable {
+
     private Long id;
     private Long sourceCountryId;
     private String name;
     private String unit;
 
     // Default constructor
-    public FruitBean() {}
+    public FruitBean() {
+    }
 
     // Parameterized constructor
     public FruitBean(Long id, Long sourceCountryId, String name, String unit) {
@@ -54,11 +56,11 @@ public class FruitBean implements Serializable {
 
     @Override
     public String toString() {
-        return "FruitBean{" +
-                "id=" + id +
-                ", sourceCountryId=" + sourceCountryId +
-                ", name='" + name + '\'' +
-                ", unit='" + unit + '\'' +
-                '}';
+        return "FruitBean{"
+                + "id=" + id
+                + ", sourceCountryId=" + sourceCountryId
+                + ", name='" + name + '\''
+                + ", unit='" + unit + '\''
+                + '}';
     }
 }
