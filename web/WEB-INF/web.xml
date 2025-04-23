@@ -13,5 +13,12 @@
     <context-param>
         <param-name>dbPassword</param-name>
         <param-value>P@$$w0rd</param-value>    </context-param>
-
+    <error-page>
+        <exception-type>java.lang.Exception</exception-type>
+        <location>/WEB-INF/errorPage.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/WEB-INF/error/notFound.jsp</location>
+    </error-page>
 </web-app>
