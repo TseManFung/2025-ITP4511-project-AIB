@@ -26,7 +26,7 @@ public class AddUserServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession(false);
         if (session == null || !"S".equals(session.getAttribute("userType"))) {
             response.sendRedirect("login.jsp?error=access_denied");
@@ -36,21 +36,21 @@ public class AddUserServlet extends HttpServlet {
         try (Connection conn = db.getConnection()) {
             Map<Long, String> shops = getReferenceData(conn, "shop");
             Map<Long, String> warehouses = getReferenceData(conn, "warehouse");
-            
+
             request.setAttribute("shops", shops);
             request.setAttribute("warehouses", warehouses);
-            
+
         } catch (SQLException e) {
             e.printStackTrace();
             request.setAttribute("error", "Database error");
         }
-        
+
         request.getRequestDispatcher("/Manager/addUser.jsp").forward(request, response);
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession(false);
         if (session == null || !"S".equals(session.getAttribute("userType"))) {
             response.sendRedirect("login.jsp?error=access_denied");
@@ -84,8 +84,8 @@ public class AddUserServlet extends HttpServlet {
 
             // Create user
             String sql = "INSERT INTO user (loginName, name, password, type, shopid, warehouseid) "
-                        + "VALUES (?, ?, SHA2(?, 256), ?, ?, ?)";
-            
+                    + "VALUES (?, ?, SHA2(?, 256), ?, ?, ?)";
+
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, loginName);
                 stmt.setString(2, name);
@@ -101,7 +101,9 @@ public class AddUserServlet extends HttpServlet {
 
         } catch (SQLException e) {
             try {
-                if (conn != null) conn.rollback();
+                if (conn != null) {
+                    conn.rollback();
+                }
                 String errorMsg = URLEncoder.encode(e.getMessage(), "UTF-8");
                 response.sendRedirect("addUserServlet?error=" + errorMsg);
             } catch (Exception ex) {
@@ -134,18 +136,27 @@ public class AddUserServlet extends HttpServlet {
     private String generateNewLoginName(Connection conn, char type) throws SQLException {
         String prefix = "";
         switch (type) {
-            case 'B': prefix = "shop_"; break;
-            case 'W': prefix = "wh_"; break;
-            case 'S': prefix = "mgr_"; break;
-            case 'M': prefix = "admin_"; break;
-            default: prefix = "user_";
+            case 'B':
+                prefix = "shop_";
+                break;
+            case 'W':
+                prefix = "wh_";
+                break;
+            case 'S':
+                prefix = "mgr_";
+                break;
+            case 'M':
+                prefix = "admin_";
+                break;
+            default:
+                prefix = "user_";
         }
 
         try (PreparedStatement stmt = conn.prepareStatement(
                 "SELECT MAX(loginName) FROM user WHERE loginName LIKE ?")) {
             stmt.setString(1, prefix + "%");
             ResultSet rs = stmt.executeQuery();
-            
+
             int nextNum = 1;
             if (rs.next()) {
                 String maxName = rs.getString(1);

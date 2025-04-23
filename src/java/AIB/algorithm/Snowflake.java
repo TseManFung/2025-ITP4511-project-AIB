@@ -2,6 +2,7 @@ package AIB.algorithm;
 
 // use long id = SnowflakeSingleton.getInstance().nextId();
 public class Snowflake {
+
     private final long epoch = 1735689600000L; // 2025-01-01 00:00:00 UTC
 
     private final long sequenceBits = 12L;

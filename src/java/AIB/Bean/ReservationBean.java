@@ -22,7 +22,8 @@ import AIB.db.ITP4511_DB;
  * @author andyt
  */
 public class ReservationBean implements Serializable {
-  private final ITP4511_DB db;
+
+    private final ITP4511_DB db;
 
     public ReservationBean(ITP4511_DB db) {
         this.db = db;
@@ -31,14 +32,13 @@ public class ReservationBean implements Serializable {
     public Map<String, Integer> getAvailableFruits(long countryId) throws SQLException {
         Map<String, Integer> fruits = new LinkedHashMap<>();
         String sql = "SELECT f.id, f.name, (SUM(ws.num) - COALESCE(SUM(rd.num), 0)) as available "
-                   + "FROM fruit f "
-                   + "JOIN warehouseStock ws ON f.id = ws.fruitid "
-                   + "JOIN warehouse w ON ws.warehouseid = w.id AND w.countryid = ? "
-                   + "LEFT JOIN reserveDetail rd ON f.id = rd.fruitid "
-                   + "LEFT JOIN reserve r ON rd.reserveid = r.id AND r.state = 'C' "
-                   + "GROUP BY f.id, f.name";
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                + "FROM fruit f "
+                + "JOIN warehouseStock ws ON f.id = ws.fruitid "
+                + "JOIN warehouse w ON ws.warehouseid = w.id AND w.countryid = ? "
+                + "LEFT JOIN reserveDetail rd ON f.id = rd.fruitid "
+                + "LEFT JOIN reserve r ON rd.reserveid = r.id AND r.state = 'C' "
+                + "GROUP BY f.id, f.name";
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, countryId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -57,7 +57,7 @@ public class ReservationBean implements Serializable {
             conn.setAutoCommit(false);
 
             long reserveId = SnowflakeSingleton.getInstance().nextId();
-            
+
             // Create reserve record
             String reserveSql = "INSERT INTO reserve (id, Shopid, reserveDT, state) VALUES (?, ?, ?, 'C')";
             try (PreparedStatement stmt = conn.prepareStatement(reserveSql)) {
@@ -78,14 +78,18 @@ public class ReservationBean implements Serializable {
                 }
                 stmt.executeBatch();
             }
-            
+
             conn.commit();
             return true;
         } catch (SQLException e) {
-            if (conn != null) conn.rollback();
+            if (conn != null) {
+                conn.rollback();
+            }
             throw e;
         } finally {
-            if (conn != null) conn.close();
+            if (conn != null) {
+                conn.close();
+            }
         }
     }
 }

@@ -44,13 +44,26 @@ public class loginServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
-
-        if ("login".equals(action)) {
-            handleLogin(request, response);
-        } else if ("logout".equals(action)) {
-            handleLogout(request, response);
-        } else {
-            response.sendRedirect("login.jsp?error=invalid_action");
+    
+        switch (action) {
+            case "login":
+                handleLogin(request, response);
+                break;
+            case "logout":
+                handleLogout(request, response);
+                break;
+            case "home":
+                HttpSession session = request.getSession(false);
+                if (session != null) {
+                    String userType = (String) session.getAttribute("userType");
+                    redirectBasedOnRole(userType, response);
+                } else {
+                    response.sendRedirect("login.jsp?error=session_expired");
+                }
+                break;
+            default:
+                response.sendRedirect("login.jsp?error=invalid_action");
+                break;
         }
     }
 
@@ -161,7 +174,7 @@ public class loginServlet extends HttpServlet {
     private void redirectBasedOnRole(String userType, HttpServletResponse response) throws IOException {
         switch (userType) {
             case "B": // Bakery shop staff
-                response.sendRedirect("Shop/bakeryDashboard.jsp");
+                response.sendRedirect("ReserveServlet");
                 break;
             case "W": // Warehouse staff
                 response.sendRedirect("Warehouse/warehouseDashboard.jsp");

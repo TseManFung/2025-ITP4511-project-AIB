@@ -4,15 +4,10 @@
  */
 package AIB.servlet;
 
+import AIB.Bean.BorrowRecordsBean;
+import AIB.db.ITP4511_DB;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.SQLException;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-
-import AIB.Bean.ReservationBean;
-import AIB.db.ITP4511_DB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -24,20 +19,18 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author andyt
  */
-@WebServlet(name = "ReserveServlet", urlPatterns = {"/ReserveServlet", "/Shop/Reserve"})
-public class ReserveServlet extends HttpServlet {
+@WebServlet(name = "BorrowRecordsServlet", urlPatterns = {"/BorrowRecordsServlet", "/Shop/BorrowRecords"})
+public class BorrowRecordsServlet extends HttpServlet {
 
-    private ReservationBean reservationBean;
+    private BorrowRecordsBean recordsBean;
 
     @Override
     public void init() throws ServletException {
-        super.init();
         ITP4511_DB db = new ITP4511_DB(
                 getServletContext().getInitParameter("dbUrl"),
                 getServletContext().getInitParameter("dbUser"),
-                getServletContext().getInitParameter("dbPassword")
-        );
-        reservationBean = new ReservationBean(db);
+                getServletContext().getInitParameter("dbPassword"));
+        recordsBean = new BorrowRecordsBean(db);
     }
 
     /**
@@ -57,10 +50,10 @@ public class ReserveServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet ReserveServlet</title>");
+            out.println("<title>Servlet BorrowRecordsServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet ReserveServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet BorrowRecordsServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -78,19 +71,13 @@ public class ReserveServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Long shopId = (Long) session.getAttribute("shopId");
+
         try {
-            HttpSession session = request.getSession();
-            Long countryId = (Long) session.getAttribute("countryId");
-
-            if (countryId == null) {
-                response.sendRedirect(request.getContextPath() + "/login.jsp");
-                return;
-            }
-
-            Map<String, Integer> fruits = reservationBean.getAvailableFruits(countryId);
-            request.setAttribute("fruits", fruits);
-            request.getRequestDispatcher("/Shop/reserve.jsp").forward(request, response);
-        } catch (SQLException e) {
+            request.setAttribute("records", recordsBean.getBorrowRecords(shopId));
+            request.getRequestDispatcher("/Shop/borrowRecords.jsp").forward(request, response);
+        } catch (Exception e) {
             throw new ServletException("Database error", e);
         }
     }
@@ -108,28 +95,24 @@ public class ReserveServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession();
         Long shopId = (Long) session.getAttribute("shopId");
-        Map<Long, Integer> items = new HashMap<>();
-
-        Enumeration<String> params = request.getParameterNames();
-        while (params.hasMoreElements()) {
-            String param = params.nextElement();
-            if (param.startsWith("fruit_")) {
-                Long fruitId = Long.parseLong(param.substring(6));
-                int qty = Integer.parseInt(request.getParameter(param));
-                if (qty > 0) {
-                    items.put(fruitId, qty);
-                }
-            }
-        }
+        String action = request.getParameter("action");
+        long recordId = Long.parseLong(request.getParameter("recordId"));
 
         try {
-            if (!items.isEmpty() && reservationBean.createReservation(shopId, items)) {
-                response.sendRedirect("reserveSuccess.jsp");
-            } else {
-                response.sendRedirect("reserve.jsp?error=1");
+            switch (action) {
+                case "approve":
+                    recordsBean.updateRecordState(recordId, "A", shopId);
+                    break;
+                case "reject":
+                    recordsBean.updateRecordState(recordId, "R", shopId);
+                    break;
+                case "complete":
+                    recordsBean.updateRecordState(recordId, "F", shopId);
+                    break;
             }
-        } catch (SQLException e) {
-            response.sendRedirect("reserve.jsp?error=2");
+            response.sendRedirect("BorrowRecords");
+        } catch (Exception e) {
+            response.sendRedirect("borrowRecords.jsp?error=1");
         }
     }
 

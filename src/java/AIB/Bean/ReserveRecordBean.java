@@ -23,7 +23,7 @@ import AIB.db.ITP4511_DB;
  * @author andyt
  */
 public class ReserveRecordBean implements Serializable {
-    
+
     private final ITP4511_DB db;
 
     public ReserveRecordBean(ITP4511_DB db) {
@@ -32,32 +32,37 @@ public class ReserveRecordBean implements Serializable {
 
     public List<Map<String, Object>> getReserveRecords(long shopId, String filterState, String sortBy) throws SQLException {
         List<Map<String, Object>> records = new ArrayList<>();
-        String sql = "SELECT r.id, r.DT, r.reserveDT, r.state, COUNT(rd.fruitid) as itemCount " +
-                     "FROM reserve r " +
-                     "JOIN reserveDetail rd ON r.id = rd.reserveid " +
-                     "WHERE r.Shopid = ? AND r.state != 'F' ";
-        
+        String sql = "SELECT r.id, r.DT, r.reserveDT, r.state, COUNT(rd.fruitid) as itemCount "
+                + "FROM reserve r "
+                + "JOIN reserveDetail rd ON r.id = rd.reserveid "
+                + "WHERE r.Shopid = ? AND r.state != 'F' ";
+
         if (filterState != null && !filterState.isEmpty()) {
             sql += "AND r.state = ? ";
         }
         sql += "GROUP BY r.id ";
-        
+
         if (sortBy != null) {
-            switch(sortBy) {
-                case "date": sql += "ORDER BY r.DT DESC"; break;
-                case "reserveDate": sql += "ORDER BY r.reserveDT"; break;
-                case "status": sql += "ORDER BY r.state"; break;
+            switch (sortBy) {
+                case "date":
+                    sql += "ORDER BY r.DT DESC";
+                    break;
+                case "reserveDate":
+                    sql += "ORDER BY r.reserveDT";
+                    break;
+                case "status":
+                    sql += "ORDER BY r.state";
+                    break;
             }
         }
 
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             int paramIndex = 1;
             stmt.setLong(paramIndex++, shopId);
             if (filterState != null && !filterState.isEmpty()) {
                 stmt.setString(paramIndex, filterState);
             }
-            
+
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 Map<String, Object> record = new LinkedHashMap<>();
@@ -74,8 +79,7 @@ public class ReserveRecordBean implements Serializable {
 
     public boolean completeReservation(long reserveId) throws SQLException {
         String sql = "UPDATE reserve SET state = 'F' WHERE id = ? AND state = 'A'";
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, reserveId);
             return stmt.executeUpdate() > 0;
         }
@@ -83,16 +87,15 @@ public class ReserveRecordBean implements Serializable {
 
     public Map<String, Object> getReserveDetails(long reserveId) throws SQLException {
         Map<String, Object> details = new LinkedHashMap<>();
-        String sql = "SELECT r.*, rd.fruitid, f.name, rd.num " +
-                     "FROM reserve r " +
-                     "JOIN reserveDetail rd ON r.id = rd.reserveid " +
-                     "JOIN fruit f ON rd.fruitid = f.id " +
-                     "WHERE r.id = ?";
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        String sql = "SELECT r.*, rd.fruitid, f.name, rd.num "
+                + "FROM reserve r "
+                + "JOIN reserveDetail rd ON r.id = rd.reserveid "
+                + "JOIN fruit f ON rd.fruitid = f.id "
+                + "WHERE r.id = ?";
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, reserveId);
             ResultSet rs = stmt.executeQuery();
-            
+
             List<Map<String, Object>> items = new ArrayList<>();
             while (rs.next()) {
                 if (details.isEmpty()) {

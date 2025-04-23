@@ -40,10 +40,12 @@ public class NavbarTag extends SimpleTagSupport {
 
         Map<String, String> shopNav = new LinkedHashMap<String, String>() {
             {
-                put("Bakery Dashboard", "/Shop/bakeryDashboard.jsp");
-                put("Create Reservation", "/reserveServlet");
-                put("Borrow Management", "/borrowServlet");
-                put("Stock Update", "/updateStockServlet");
+                put("Reserve form Warehouse", "/reserveServlet");
+                put("Reservtion Record", "/ReserveRecordServlet");
+                put("Borrow form Other Shop", "/BorrowServlet");
+                put("Borrow Record", "/BorrowRecordServlet");
+                put("Stock Update", "/StockUpdateServlet");
+                
             }
         };
 
