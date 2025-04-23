@@ -2,8 +2,10 @@
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <!DOCTYPE html>
 <html>
+<head>
 <jsp:include page="/component/head.jsp" />
-
+<title>page name</title>
+</head>
 <body>
   <jsp:include page="/component/modal.jsp" />
   
