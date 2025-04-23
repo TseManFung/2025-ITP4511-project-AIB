@@ -1,13 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package AIB.tag;
 
-/**
- *
- * @author andyt
- */
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.jsp.JspException;
 import jakarta.servlet.jsp.JspWriter;
@@ -17,7 +9,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import static javax.swing.UIManager.put;
 
 public class NavbarTag extends SimpleTagSupport {
 
@@ -28,7 +19,7 @@ public class NavbarTag extends SimpleTagSupport {
         HttpSession session = pageContext.getSession();
         String contextPath = pageContext.getServletContext().getContextPath();
 
-        // 定义不同角色的导航菜单
+        // 定義不同角色的導航菜單
         Map<String, String> managerNav = new LinkedHashMap<String, String>() {
             {
                 put("Dashboard", "/Manager/managementDashboard.jsp");
@@ -40,38 +31,30 @@ public class NavbarTag extends SimpleTagSupport {
 
         Map<String, String> shopNav = new LinkedHashMap<String, String>() {
             {
-                put("Reserve form Warehouse", "/reserveServlet");
-                put("Reservtion Record", "/ReserveRecordServlet");
-                put("Borrow form Other Shop", "/BorrowServlet");
+                put("Reserve from Warehouse", "/reserveServlet");
+                put("Reservation Record", "/ReserveRecordServlet");
+                put("Borrow from Other Shop", "/BorrowServlet");
                 put("Borrow Record", "/BorrowRecordServlet");
                 put("Stock Update", "/StockUpdateServlet");
-                
             }
         };
 
-        Map<String, String> warehouseNav = new LinkedHashMap<String, String>() {
-            {
-                put("Warehouse Dashboard", "/Warehouse/warehouseDashboard.jsp");
-                put("Inventory Management", "/inventoryServlet");
-                put("Shipment Tracking", "/shipmentServlet");
-                put("Replenishment", "/replenishmentServlet");
-            }
-        };
+        Map<String, String> warehouseNav = getWarehouseNav(session);
 
         try {
             out.println("<header id='headerofnav'>");
-            // Logo（保持不变）
+            // Logo（保持不變）
             out.println("    <a href='" + getDashboardUrl(session, contextPath) + "' class='logo' id='navbar-logo'>");
             out.println("        <img src='" + contextPath + "/images/common/lego.png' style='width: 100%; height: 8vh;' alt='Logo'>");
             out.println("    </a>");
 
-            // 菜单图标
+            // 菜單圖標
             out.println("    <i class='fas fa-bars menu-icon'></i>");
 
-            // 导航菜单
+            // 導航菜單
             out.println("    <ul id='navbar-ul'>");
 
-            // 根据角色显示对应菜单项
+            // 根據角色顯示對應菜單項
             String userType = (session != null) ? (String) session.getAttribute("userType") : null;
             Map<String, String> currentNav = getNavMap(userType, managerNav, shopNav, warehouseNav);
 
@@ -81,7 +64,7 @@ public class NavbarTag extends SimpleTagSupport {
                 out.println("        </li>");
             }
 
-            // 登出按钮（保持不变）
+            // 登出按鈕（保持不變）
             out.println("        <li class='logout-item'>");
             out.println("            <a href='" + contextPath + "/loginServlet?action=logout'>Logout</a>");
             out.println("        </li>");
@@ -114,6 +97,27 @@ public class NavbarTag extends SimpleTagSupport {
         }
     }
 
+    private Map<String, String> getWarehouseNav(HttpSession session) {
+        String warehouseType = (session != null) ? (String) session.getAttribute("warehouseType") : null;
+        Map<String, String> warehouseNav = new LinkedHashMap<>();
+
+        if ("S".equals(warehouseType)) { // 源倉庫員工
+            warehouseNav.put("庫存轉移", "/sourceWarehouseStockChangeServlet");
+            warehouseNav.put("庫存查詢", "/inventoryQueryServlet");
+        } else if ("C".equals(warehouseType)) { // 中央倉庫員工
+            warehouseNav.put("庫存接收", "/centralWarehouseReceiveServlet");
+            warehouseNav.put("預訂批准", "/acceptReserveListServlet");
+            warehouseNav.put("庫存管理", "/inventoryManagementServlet");
+        } else { // 其他倉庫員工（保持原有導航）
+            warehouseNav.put("Warehouse Dashboard", "/Warehouse/warehouseDashboard.jsp");
+            warehouseNav.put("Inventory Management", "/inventoryServlet");
+            warehouseNav.put("Shipment Tracking", "/shipmentServlet");
+            warehouseNav.put("Replenishment", "/replenishmentServlet");
+        }
+
+        return warehouseNav;
+    }
+
     private String getDashboardUrl(HttpSession session, String contextPath) {
         if (session == null) {
             return contextPath;
@@ -131,9 +135,21 @@ public class NavbarTag extends SimpleTagSupport {
             case "B":
                 return contextPath + "/Shop/bakeryDashboard.jsp";
             case "W":
-                return contextPath + "/Warehouse/warehouseDashboard.jsp";
+                return getWarehouseDashboardUrl(session, contextPath);
             default:
                 return contextPath;
+        }
+    }
+
+    private String getWarehouseDashboardUrl(HttpSession session, String contextPath) {
+        String warehouseType = (session != null) ? (String) session.getAttribute("warehouseType") : null;
+
+        if ("S".equals(warehouseType)) {
+            return contextPath + "/Warehouse/sourceDashboard.jsp";
+        } else if ("C".equals(warehouseType)) {
+            return contextPath + "/Warehouse/centralDashboard.jsp";
+        } else {
+            return contextPath + "/Warehouse/warehouseDashboard.jsp";
         }
     }
 }
