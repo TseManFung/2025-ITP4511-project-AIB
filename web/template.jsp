@@ -1,15 +1,18 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <!DOCTYPE html>
 <html>
 <head>
 <jsp:include page="/component/head.jsp" />
 <title>page name</title>
+
+
 </head>
 <body>
   <jsp:include page="/component/modal.jsp" />
   
-  <component:navbar />
+  <component:navbar/>
 
 
   <!-- header -->

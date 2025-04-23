@@ -6,8 +6,8 @@ package AIB.Bean;
 
 import java.io.Serializable;
 
-
 public class UserBean implements Serializable {
+
     private String loginName;
     private String name;
     private String password;
@@ -63,7 +63,7 @@ public class UserBean implements Serializable {
     }
 
     public Long getWarehouseId() {
-        return warehouseId;
+        return warehouseId != null && warehouseId > 0 ? warehouseId : null;
     }
 
     public void setWarehouseId(Long warehouseId) {
@@ -71,7 +71,7 @@ public class UserBean implements Serializable {
     }
 
     public Long getShopId() {
-        return shopId;
+        return shopId != null && shopId > 0 ? shopId : null;
     }
 
     public void setShopId(Long shopId) {
@@ -97,13 +97,13 @@ public class UserBean implements Serializable {
     // Override toString() for debugging purposes
     @Override
     public String toString() {
-        return "UserBean{" +
-                "loginName='" + loginName + '\'' +
-                ", name='" + name + '\'' +
-                ", password='[PROTECTED]'" +
-                ", type=" + type +
-                ", warehouseId=" + warehouseId +
-                ", shopId=" + shopId +
-                '}';
+        return "UserBean{"
+                + "loginName='" + loginName + '\''
+                + ", name='" + name + '\''
+                + ", password='[PROTECTED]'"
+                + ", type=" + type
+                + ", warehouseId=" + warehouseId
+                + ", shopId=" + shopId
+                + '}';
     }
 }

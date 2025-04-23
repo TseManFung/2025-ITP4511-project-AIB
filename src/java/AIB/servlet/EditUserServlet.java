@@ -27,7 +27,7 @@ public class EditUserServlet extends HttpServlet {
     // Handle GET request to display edit form
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession(false);
         if (session == null || !"S".equals(session.getAttribute("userType"))) {
             response.sendRedirect("login.jsp?error=access_denied");
@@ -36,36 +36,36 @@ public class EditUserServlet extends HttpServlet {
 
         String loginName = request.getParameter("loginName");
         UserBean user = null;
-        
+
         try (Connection conn = db.getConnection()) {
             // Get reference data
             Map<Long, String> shops = getReferenceData(conn, "shop");
             Map<Long, String> warehouses = getReferenceData(conn, "warehouse");
-            
+
             // Get user details
             user = getUserDetails(conn, loginName);
-            
+
             if (user == null) {
                 response.sendRedirect("userListServlet?error=user_not_found");
                 return;
             }
-            
+
             request.setAttribute("shops", shops);
             request.setAttribute("warehouses", warehouses);
             request.setAttribute("user", user);
-            
+
         } catch (SQLException e) {
             e.printStackTrace();
             request.setAttribute("error", "Database error");
         }
-        
+
         request.getRequestDispatcher("/Manager/editUser.jsp").forward(request, response);
     }
 
     // Handle POST request for form submission
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession(false);
         if (session == null || !"S".equals(session.getAttribute("userType"))) {
             response.sendRedirect("login.jsp?error=access_denied");
@@ -86,10 +86,9 @@ public class EditUserServlet extends HttpServlet {
             conn.setAutoCommit(false);
 
             char originalType = getOriginalUserType(conn, originalLoginName);
-            
-            if (originalType != newType) {
-                handleRoleChange(
-                    conn, 
+
+            updateUser(
+                    conn,
                     originalLoginName,
                     newLoginName,
                     newName,
@@ -97,23 +96,13 @@ public class EditUserServlet extends HttpServlet {
                     newType,
                     shopId,
                     warehouseId
-                );
-            } else {
-                updateExistingUser(
-                    conn,
-                    originalLoginName,
-                    newLoginName,
-                    newName,
-                    newPassword,
-                    shopId,
-                    warehouseId
-                );
-            }
-            
+            );
             conn.commit();
             response.sendRedirect("userListServlet?message=update_success");
-            
+            System.out.println("Transaction committed successfully");
+
         } catch (SQLException e) {
+            System.err.println("Transaction failed: " + e.getMessage());
             handleSQLException(conn, response, e);
         } finally {
             cleanupResources(conn);
@@ -138,10 +127,10 @@ public class EditUserServlet extends HttpServlet {
         UserBean user = null;
         try (PreparedStatement stmt = conn.prepareStatement(
                 "SELECT * FROM user WHERE loginName = ?")) {
-            
+
             stmt.setString(1, loginName);
             ResultSet rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 user = new UserBean();
                 user.setLoginName(rs.getString("loginName"));
@@ -155,32 +144,41 @@ public class EditUserServlet extends HttpServlet {
     }
 
     // Handle role change logic
-    private void handleRoleChange(Connection conn, 
-                                String originalLoginName,
-                                String newLoginName,
-                                String newName,
-                                String newPassword,
-                                char newType,
-                                Long shopId,
-                                Long warehouseId) throws SQLException {
-        
+    private void updateUser(Connection conn,
+            String originalLoginName,
+            String newLoginName,
+            String newName,
+            String newPassword,
+            char newType,
+            Long shopId,
+            Long warehouseId) throws SQLException {
+
         validateRequiredIds(newType, shopId, warehouseId);
-        
+
         if (newLoginName == null || newLoginName.trim().isEmpty()) {
             newLoginName = generateNewLoginName(conn, newType);
         }
 
-        createNewUser(
-            conn,
-            newLoginName,
-            newName,
-            newPassword,
-            newType,
-            shopId,
-            warehouseId
-        );
+        String sql = "UPDATE user SET "
+                + "loginName = ?, "
+                + "name = ?, "
+                + "password = CASE WHEN ? = '' THEN password ELSE ? END, "
+                + "type = ?, "
+                + "shopid = ?, "
+                + "warehouseid = ? "
+                + "WHERE loginName = ?";
 
-        deleteOriginalUser(conn, originalLoginName);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, newLoginName);
+            stmt.setString(2, newName);
+            stmt.setString(3, newPassword);
+            stmt.setString(4, newPassword);
+            stmt.setString(5, String.valueOf(newType));
+            stmt.setObject(6, (shopId != null && shopId > 0) ? shopId : null);
+            stmt.setObject(7, (warehouseId != null && warehouseId > 0) ? warehouseId : null);
+            stmt.setString(8, originalLoginName);
+            stmt.executeUpdate();
+        }
     }
 
     // Validate required IDs based on role
@@ -190,64 +188,6 @@ public class EditUserServlet extends HttpServlet {
         }
         if (type == 'W' && warehouseId == null) {
             throw new SQLException("Warehouse selection required");
-        }
-    }
-
-    // Create new user record
-    private void createNewUser(Connection conn,
-                             String loginName,
-                             String name,
-                             String password,
-                             char type,
-                             Long warehouseId,
-                             Long shopId) throws SQLException {
-        String sql = "INSERT INTO user (loginName, name, password, type, warehouseid, shopid) "
-                   + "VALUES (?, ?, ?, ?, ?, ?)";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, loginName);
-            stmt.setString(2, name);
-            stmt.setString(3, password);
-            stmt.setString(4, String.valueOf(type));
-            stmt.setObject(5, warehouseId);
-            stmt.setObject(6, shopId);
-            stmt.executeUpdate();
-        }
-    }
-
-    // Delete original user
-    private void deleteOriginalUser(Connection conn, String loginName) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "DELETE FROM user WHERE loginName = ?")) {
-            stmt.setString(1, loginName);
-            stmt.executeUpdate();
-        }
-    }
-
-    // Update existing user
-    private void updateExistingUser(Connection conn,
-                                  String originalLoginName,
-                                  String newLoginName,
-                                  String newName,
-                                  String newPassword,
-                                  Long shopId,
-                                  Long warehouseId) throws SQLException {
-        String sql = "UPDATE user SET "
-                   + "loginName = ?, "
-                   + "name = ?, "
-                   + "password = COALESCE(?, password), "
-                   + "shopid = ?, "
-                   + "warehouseid = ? "
-                   + "WHERE loginName = ?";
-        
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, newLoginName);
-            stmt.setString(2, newName);
-            stmt.setString(3, newPassword);
-            stmt.setObject(4, shopId);
-            stmt.setObject(5, warehouseId);
-            stmt.setString(6, originalLoginName);
-            stmt.executeUpdate();
         }
     }
 
@@ -295,7 +235,7 @@ public class EditUserServlet extends HttpServlet {
                 "SELECT MAX(loginName) FROM user WHERE loginName LIKE ?")) {
             stmt.setString(1, prefix + "%");
             ResultSet rs = stmt.executeQuery();
-            
+
             int nextNum = 1;
             if (rs.next()) {
                 String maxName = rs.getString(1);
@@ -309,10 +249,16 @@ public class EditUserServlet extends HttpServlet {
 
     private void handleSQLException(Connection conn, HttpServletResponse response, SQLException e) {
         try {
-            if (conn != null) conn.rollback();
+            if (conn != null) {
+                conn.rollback();
+            }
             String errorMsg = "database_error";
-            if (e.getMessage().contains("Shop selection")) errorMsg = "shop_required";
-            if (e.getMessage().contains("Warehouse selection")) errorMsg = "warehouse_required";
+            if (e.getMessage().contains("Shop selection")) {
+                errorMsg = "shop_required";
+            }
+            if (e.getMessage().contains("Warehouse selection")) {
+                errorMsg = "warehouse_required";
+            }
             response.sendRedirect("userListServlet?error=" + errorMsg);
         } catch (Exception ex) {
             ex.printStackTrace();
