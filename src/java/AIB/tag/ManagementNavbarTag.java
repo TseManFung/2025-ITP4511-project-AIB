@@ -27,9 +27,10 @@ public class ManagementNavbarTag extends SimpleTagSupport {
             out.println("        <li id='navbar-item'>");
             out.println("            <a href='" + contextPath + "/userListServlet'>User List</a>");
             out.println("        </li>");
-              out.println("        <li id='navbar-item'>");
+             out.println("        <li id='navbar-item'>");
             out.println("            <a href='" + contextPath + "/fruitServlet'>fruit List</a>");
             out.println("        </li>");
+            
             out.println("        <li id='logout-item'>");
             out.println("            <a href='" + contextPath + "/loginServlet?action=logout'>Logout</a>");
             out.println("        </li>");
