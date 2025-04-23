@@ -18,6 +18,7 @@
         <jsp:include page="/component/modal.jsp" />
         <component:Managementnavbar/>
 
+
         <!-- header -->
         <div style="height: calc(0lvh + 128px); background-color: white;" id="header"></div>
         <!-- /header -->

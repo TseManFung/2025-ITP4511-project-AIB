@@ -33,14 +33,14 @@
                     <p>User type: <strong>${userType}</strong></p>
                 </div>
 
-                <c:if test="${userType == 'S'}">
+<!--                <c:if test="${userType == 'S'}">
                     <a href="${pageContext.request.contextPath}/userListServlet" class="btn btn-primary">View User List</a>
                 </c:if>
 
                 <form action="../loginServlet" method="POST">
                     <input type="hidden" name="action" value="logout">
                     <button type="submit" class="btn btn-danger">Logout</button>
-                </form>
+                </form>-->
             </div>
         </div> 
     </div>
