@@ -6,12 +6,19 @@
 	 version="6.0">
 <context-param>
         <param-name>dbUrl</param-name>
-        <param-value>jdbc:mysql://192.9.149.106:3306/ITP4511_DB?useSSL=false</param-value>    </context-param>
+        <param-value>jdbc:mysql://192.9.149.106:3306/ITP4511_DB?useSSL=false&amp;allowMultiQueries=true</param-value>    </context-param>
     <context-param>
         <param-name>dbUser</param-name>
         <param-value>ITP4511user</param-value>    </context-param>
     <context-param>
         <param-name>dbPassword</param-name>
         <param-value>P@$$w0rd</param-value>    </context-param>
-
+    <error-page>
+        <exception-type>java.lang.Exception</exception-type>
+        <location>/WEB-INF/errorPage.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/WEB-INF/error/notFound.jsp</location>
+    </error-page>
 </web-app>
