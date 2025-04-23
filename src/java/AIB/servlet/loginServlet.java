@@ -4,7 +4,6 @@
  */
 package AIB.servlet;
 
-//import other file
 import AIB.db.ITP4511_DB;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -25,6 +24,7 @@ public class loginServlet extends HttpServlet {
 
     private ITP4511_DB db;
 
+    @Override
     public void init() {
         String dbUser = this.getServletContext().getInitParameter("dbUser");
         String dbPassword = this.getServletContext().getInitParameter("dbPassword");
@@ -43,7 +43,6 @@ public class loginServlet extends HttpServlet {
     }
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
         String action = request.getParameter("action");
     
         switch (action) {
@@ -69,7 +68,6 @@ public class loginServlet extends HttpServlet {
     }
 
     private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
         String loginName = request.getParameter("loginName");
         String password = request.getParameter("password");
 
@@ -78,9 +76,8 @@ public class loginServlet extends HttpServlet {
             return;
         }
 
-        try {
-            Connection conn = db.getConnection();
-            String sql = "SELECT * FROM user WHERE loginName = ? AND password = ? AND type != 'D'";
+        try (Connection conn = db.getConnection()) {
+            String sql = "SELECT loginName, name, type, warehouseid, shopid FROM user WHERE loginName = ? AND password = ? AND type != 'D'";
             PreparedStatement stmt = conn.prepareStatement(sql);
 
             String hashedPassword = hashPassword(password);
@@ -95,42 +92,67 @@ public class loginServlet extends HttpServlet {
             if (rs.next()) {
                 HttpSession session = request.getSession();
                 String userType = rs.getString("type");
-                String id;
-
-                session.setAttribute("loginName", loginName);
-                session.setAttribute("userType", userType);
-                session.setAttribute("userName", rs.getString("name"));
-
                 Long countryId = null;
                 Long cityId = null;
 
-                if (userType.equals("B")) {
-                    id = rs.getString("shopid");
-                    session.setAttribute("ID", id);
+                session.setAttribute("loginName", rs.getString("loginName"));
+                session.setAttribute("userType", userType);
+                session.setAttribute("userName", rs.getString("name"));
 
-                    String shopQuery = "SELECT s.cityid, c.countryid FROM shop s "
-                            + "JOIN city c ON s.cityid = c.id WHERE s.id = ?";
-                    try (PreparedStatement shopStmt = conn.prepareStatement(shopQuery)) {
-                        shopStmt.setLong(1, Long.parseLong(id));
-                        ResultSet shopRs = shopStmt.executeQuery();
-                        if (shopRs.next()) {
-                            cityId = shopRs.getLong("cityid");
-                            countryId = shopRs.getLong("countryid");
+                if (userType.equals("B")) {
+                    Long shopId = rs.getLong("shopid");
+                    if (!rs.wasNull()) {
+                        session.setAttribute("shopId", shopId);
+
+                        String shopQuery = "SELECT s.cityid, c.countryid FROM shop s "
+                                + "JOIN city c ON s.cityid = c.id WHERE s.id = ?";
+                        try (PreparedStatement shopStmt = conn.prepareStatement(shopQuery)) {
+                            shopStmt.setLong(1, shopId);
+                            ResultSet shopRs = shopStmt.executeQuery();
+                            if (shopRs.next()) {
+                                cityId = shopRs.getLong("cityid");
+                                countryId = shopRs.getLong("countryid");
+                            } else {
+                                response.sendRedirect("login.jsp?error=invalid_shop");
+                                return;
+                            }
                         }
+                    } else {
+                        response.sendRedirect("login.jsp?error=missing_shop_id");
+                        return;
                     }
                 } else if (userType.equals("W")) {
-                    id = rs.getString("warehouseid");
-                    session.setAttribute("ID", id);
+                    Long warehouseId = rs.getLong("warehouseid");
+                    if (!rs.wasNull()) {
+                        session.setAttribute("warehouseId", warehouseId);
 
-                    String warehouseQuery = "SELECT countryid FROM warehouse WHERE id = ?";
-                    try (PreparedStatement warehouseStmt = conn.prepareStatement(warehouseQuery)) {
-                        warehouseStmt.setLong(1, Long.parseLong(id));
-                        ResultSet warehouseRs = warehouseStmt.executeQuery();
-                        if (warehouseRs.next()) {
-                            countryId = warehouseRs.getLong("countryid");
+                        String warehouseQuery = "SELECT countryid, type FROM warehouse WHERE id = ?";
+                        try (PreparedStatement warehouseStmt = conn.prepareStatement(warehouseQuery)) {
+                            warehouseStmt.setLong(1, warehouseId);
+                            ResultSet warehouseRs = warehouseStmt.executeQuery();
+                            if (warehouseRs.next()) {
+                                countryId = warehouseRs.getLong("countryid");
+                                String warehouseType = warehouseRs.getString("type");
+                                if (!"S".equals(warehouseType) && !"C".equals(warehouseType)) {
+                                    response.sendRedirect("login.jsp?error=invalid_warehouse_type");
+                                    return;
+                                }
+                                session.setAttribute("warehouseType", warehouseType);
+                            } else {
+                                response.sendRedirect("login.jsp?error=invalid_warehouse");
+                                return;
+                            }
                         }
+                    } else {
+                        response.sendRedirect("login.jsp?error=missing_warehouse_id");
+                        return;
                     }
                     cityId = null;
+                } else if (userType.equals("S") || userType.equals("M")) {
+                    // Senior management or Manager doesn't need shopId or warehouseId
+                } else {
+                    response.sendRedirect("login.jsp?error=invalid_role");
+                    return;
                 }
 
                 session.setAttribute("countryId", countryId);
@@ -140,10 +162,6 @@ public class loginServlet extends HttpServlet {
             } else {
                 response.sendRedirect("login.jsp?error=invalid_credentials");
             }
-
-            rs.close();
-            stmt.close();
-            conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
             response.sendRedirect("login.jsp?error=database_error");
@@ -162,6 +180,7 @@ public class loginServlet extends HttpServlet {
                 response.sendRedirect("Warehouse/warehouseDashboard.jsp");
                 break;
             case "S": // Senior management
+            case "M": // Manager
                 response.sendRedirect("Manager/managementDashboard.jsp");
                 break;
             default:
@@ -173,19 +192,11 @@ public class loginServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session != null) {
             System.out.println("Logging out user: " + session.getAttribute("loginName"));
-
-            session.removeAttribute("userId");
-            session.removeAttribute("loginName");
-            session.removeAttribute("userType");
-            session.removeAttribute("userName");
-            session.removeAttribute("ID");
-
             session.invalidate();
             System.out.println("Session invalidated successfully");
         } else {
             System.out.println("No active session found during logout");
         }
-
         response.sendRedirect("login.jsp?message=logout_success");
     }
 
@@ -201,7 +212,6 @@ public class loginServlet extends HttpServlet {
             }
             hexString.append(hex);
         }
-
         return hexString.toString();
     }
 }
