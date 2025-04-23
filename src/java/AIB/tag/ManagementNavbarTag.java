@@ -13,7 +13,7 @@ public class ManagementNavbarTag extends SimpleTagSupport {
         JspWriter out = getJspContext().getOut();
         PageContext pageContext = (PageContext) getJspContext();
         String contextPath = pageContext.getServletContext().getContextPath();
-
+       
         try {
             out.println("<header id='headerofnav'>");
             // Logo
