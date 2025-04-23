@@ -18,12 +18,13 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  *
  * @author andyt
  */
-@WebServlet(name = "BorrowServlet", urlPatterns = { "/BorrowServlet" })
+@WebServlet(name = "BorrowServlet", urlPatterns = { "/BorrowServlet","/Shop/Borrow" })
 public class BorrowServlet extends HttpServlet {
     private BorrowBean borrowBean;
 
@@ -82,7 +83,7 @@ public class BorrowServlet extends HttpServlet {
             Long cityId = (Long) session.getAttribute("cityId");
             
             if (currentShopId == null || cityId == null) {
-                response.sendRedirect("../login.jsp");
+                response.sendRedirect(request.getContextPath()+"/login.jsp");
                 return;
             }
             

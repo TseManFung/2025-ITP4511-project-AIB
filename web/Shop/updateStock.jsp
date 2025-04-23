@@ -5,6 +5,7 @@
 --%>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
+<%@ page isELIgnored="false" %>
 <!DOCTYPE html>
 <html>
 <head>

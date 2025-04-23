@@ -143,7 +143,7 @@ public class loginServlet extends HttpServlet {
     private void redirectBasedOnRole(String userType, HttpServletResponse response) throws IOException {
         switch (userType) {
             case "B": // Bakery shop staff
-                response.sendRedirect("Shop/bakeryDashboard.jsp");
+                response.sendRedirect("Shop/Reserve");
                 break;
             case "W": // Warehouse staff
                 response.sendRedirect("Warehouse/warehouseDashboard.jsp");

@@ -4,6 +4,7 @@
     Author     : andyt
 --%>
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <!DOCTYPE html>
 <html>

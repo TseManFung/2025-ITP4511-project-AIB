@@ -17,12 +17,13 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  *
  * @author andyt
  */
-@WebServlet(name = "ReserveRecordServlet", urlPatterns = { "/ReserveRecordServlet" })
+@WebServlet(name = "ReserveRecordServlet", urlPatterns = { "/ReserveRecordServlet","/Shop/ReserveRecord" })
 public class ReserveRecordServlet extends HttpServlet {
     private ReserveRecordBean recordBean;
 
@@ -79,7 +80,7 @@ public class ReserveRecordServlet extends HttpServlet {
             HttpSession session = request.getSession();
             Long shopId = (Long) session.getAttribute("shopId");
             if (shopId == null) {
-                response.sendRedirect("../login.jsp");
+                response.sendRedirect(request.getContextPath()+"/login.jsp");
                 return;
             }
 

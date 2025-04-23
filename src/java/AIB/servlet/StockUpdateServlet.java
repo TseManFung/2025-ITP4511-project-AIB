@@ -18,12 +18,13 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  *
  * @author andyt
  */
-@WebServlet(name = "StockUpdateServlet", urlPatterns = {"/StockUpdateServlet"})
+@WebServlet(name = "StockUpdateServlet", urlPatterns = {"/StockUpdateServlet","/Shop/StockUpdate"})
 public class StockUpdateServlet extends HttpServlet {
     private StockUpdateBean stockBean;
 
@@ -80,7 +81,7 @@ public class StockUpdateServlet extends HttpServlet {
             HttpSession session = request.getSession();
             Long shopId = (Long) session.getAttribute("shopId");
             if (shopId == null) {
-                response.sendRedirect("../login.jsp");
+                response.sendRedirect(request.getContextPath()+"/login.jsp");
                 return;
             }
             
