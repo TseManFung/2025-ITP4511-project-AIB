@@ -87,7 +87,7 @@
                             %>
                         </tbody>
                     </table>
-                    <button type="submit" class="btn btn-primary">Submit Update</button>
+                    <button type="submit" class="btn btn-primary" onclick="hideButtonAndSubmit(this)">Submit Update</button>
                 </form>
             </div> 
         </div>
@@ -107,10 +107,22 @@
             function validateQuantity(input) {
                 const max = parseInt(input.max);
                 if (input.value > max) {
-                    input.setCustomValidity(`Cannot exceed ${max}`);
+                    input.setCustomValidity(`Quantity cannot exceed ${max}`);
                 } else {
                     input.setCustomValidity('');
                 }
+            }
+        
+            function hideButtonAndSubmit(button) {
+                const form = button.form;
+        
+                if (!form.checkValidity()) {
+                    form.reportValidity(); 
+                    return; 
+                }
+        
+                button.style.display = 'none';
+                form.submit();
             }
         </script>
     </body>

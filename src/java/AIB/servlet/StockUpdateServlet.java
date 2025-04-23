@@ -122,13 +122,12 @@ public class StockUpdateServlet extends HttpServlet {
                 }
             }
 
-            Map<String, Object> result = stockBean.updateStock(shopId, updates);
-            request.setAttribute("original", result.get("original"));
-            request.setAttribute("updated", result.get("updated"));
+            Map<Long, Map<String, Object>> result = stockBean.updateStock(shopId, updates);
+            request.setAttribute("result", result);
             request.getRequestDispatcher("/Shop/updateResult.jsp").forward(request, response);
 
-        } catch (Exception e) {
-            response.sendRedirect("updateStock?error=1");
+        } catch (SQLException e) {
+            response.sendRedirect("StockUpdateServlet?error=1");
         }
     }
 

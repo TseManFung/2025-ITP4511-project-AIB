@@ -67,7 +67,8 @@
                         <label for="reserveDT" class="form-label">Reservation Date</label>
                         <input type="date" id="reserveDT" name="reserveDT" class="form-control" required
                                min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) %>"
-                               max="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 14L * 24 * 60 * 60 * 1000)) %>">
+                               max="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 14L * 24 * 60 * 60 * 1000)) %>"
+                               value="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 14L * 24 * 60 * 60 * 1000)) %>">
                     </div>
                     <table class="table table-striped">
                         <thead class="thead-dark">
@@ -133,9 +134,17 @@
                     input.setCustomValidity('');
                 }
             }
+        
             function hideButtonAndSubmit(button) {
+                const form = button.form;
+        
+                if (!form.checkValidity()) {
+                    form.reportValidity(); 
+                    return; 
+                }
+        
                 button.style.display = 'none';
-                button.form.submit();
+                form.submit();
             }
         </script>
     </body>

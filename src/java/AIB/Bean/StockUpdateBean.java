@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import AIB.algorithm.SnowflakeSingleton;
@@ -47,25 +48,59 @@ public class StockUpdateBean implements Serializable {
         return stock;
     }
 
-    public Map<String, Object> updateStock(long shopId, Map<Long, Integer> updates) throws SQLException {
+    public Map<Long, Map<String, Object>> getShopStock(long shopId,List<Long> fruitId) throws SQLException {
+        Map<Long, Map<String, Object>> stock = new HashMap<>();
+        String sql = "SELECT f.id AS fruitid, f.name, ss.num " +
+                     "FROM shopStock ss " +
+                     "JOIN fruit f ON ss.fruitid = f.id " +
+                     "WHERE ss.shopid = ? AND ss.fruitid IN (";
+        for (int i = 0; i < fruitId.size(); i++) {
+            sql += "?";
+            if (i < fruitId.size() - 1) {
+                sql += ",";
+            }
+        }
+        sql += ")";
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, shopId);
+            for (int i = 0; i < fruitId.size(); i++) {
+                stmt.setLong(i + 2, fruitId.get(i));
+            }
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> fruitData = new HashMap<>();
+                fruitData.put("name", rs.getString("name"));
+                fruitData.put("originalNum", rs.getInt("num"));
+                stock.put(rs.getLong("fruitid"), fruitData);
+            }
+        }
+        return stock;
+    }
+
+    public Map<Long, Map<String, Object>> updateStock(long shopId, Map<Long, Integer> updates) throws SQLException {
         Connection conn = null;
-        Map<String, Object> result = new HashMap<>();
         try {
             conn = db.getConnection();
             conn.setAutoCommit(false);
 
             // Get original values
-            Map<Long, Integer> original = getShopStock(shopId);
-            result.put("original", original);
+            Map<Long, Map<String, Object>> shopStock = getShopStock(shopId, updates.keySet().stream().toList());
 
             // Update shopStock
             String updateSql = "UPDATE shopStock SET num = ? WHERE shopid = ? AND fruitid = ?";
             try (PreparedStatement stmt = conn.prepareStatement(updateSql)) {
                 for (Map.Entry<Long, Integer> entry : updates.entrySet()) {
-                    int newValue = original.get(entry.getKey()) - entry.getValue();
+                    Map<String, Object> fruitData = shopStock.get(entry.getKey());
+                    if (fruitData == null) {
+                        throw new SQLException("Fruit not found in shop stock");
+                    }
+                    int consumeNum = entry.getValue();
+                    int newValue = (int) fruitData.get("originalNum") - consumeNum;
                     if (newValue < 0) {
                         throw new SQLException("Negative stock not allowed");
                     }
+                    fruitData.put("updatedNum", newValue);
+                    fruitData.put("consumeNum", consumeNum);
 
                     stmt.setInt(1, newValue);
                     stmt.setLong(2, shopId);
@@ -97,8 +132,7 @@ public class StockUpdateBean implements Serializable {
             }
 
             conn.commit();
-            result.put("updated", getShopStock(shopId));
-            return result;
+            return shopStock;
         } catch (SQLException e) {
             if (conn != null) {
                 conn.rollback();
