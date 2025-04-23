@@ -10,7 +10,9 @@
     <body>
         <div class="container mt-5">
             <h1>User List</h1>
-
+            <div class="mb-3">
+                <a href="addUserServlet" class="btn btn-success">Add New User</a>
+            </div>
 
             <c:if test="${not empty error}">
                 <div class="alert alert-danger">${error}</div>
@@ -22,8 +24,7 @@
                         <th>Login Name</th>
                         <th>Name</th>
                         <th>Role</th>
-                        <th>Warehouse ID</th>
-                        <th>Shop ID</th>
+                        <th>ID</th>
                         <th>Actions</th> 
                     </tr>
                 </thead>
@@ -33,8 +34,19 @@
                             <td>${user.loginName}</td>
                             <td>${user.name}</td>
                             <td>${user.typeDescription}</td>
-                            <td>${user.warehouseId}</td>
-                            <td>${user.shopId}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${user.type.toString() == 'B' && user.shopId != 0}">
+                                        Shop: ${user.shopId}    
+                                    </c:when>
+                                    <c:when test="${user.type.toString() == 'W' && user.warehouseId != 0}">
+                                        Warehouse: ${user.warehouseId}
+                                    </c:when>
+                                    <c:otherwise>
+                                        -
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
                             <td>
                                 <c:if test="${sessionScope.userType == 'S'}">
                                     <a href="editUserServlet?loginName=${user.loginName}" class="btn btn-warning btn-sm">Edit</a>
