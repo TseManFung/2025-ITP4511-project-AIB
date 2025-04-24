@@ -71,7 +71,7 @@
                                 <td><%= num %></td>
                                 <td>
                                     <input type="number" name="fruit_<%= fruitId %>" value="0"
-                                           class="form-control" max="<%= num %>"
+                                           class="form-control" max="<%= num %>" min="0"
                                            required oninput="validateQuantity(this)">
                                 </td>
                             </tr>
