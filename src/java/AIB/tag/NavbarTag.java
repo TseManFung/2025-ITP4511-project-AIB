@@ -19,7 +19,6 @@ public class NavbarTag extends SimpleTagSupport {
         HttpSession session = pageContext.getSession();
         String contextPath = pageContext.getServletContext().getContextPath();
 
-      
         Map<String, String> managerNav = new LinkedHashMap<String, String>() {
             {
                 put("Dashboard", "/Manager/managementDashboard.jsp");
@@ -31,9 +30,9 @@ public class NavbarTag extends SimpleTagSupport {
 
         Map<String, String> shopNav = new LinkedHashMap<String, String>() {
             {
-                put("Reserve from Warehouse", "/reserveServlet");
-                put("Reservation Record", "/ReserveRecordServlet");
-                put("Borrow from Other Shop", "/BorrowServlet");
+                put("Reserve form Warehouse", "/ReserveServlet");
+                put("Reservtion Record", "/ReserveRecordServlet");
+                put("Borrow form Other Shop", "/BorrowServlet");
                 put("Borrow Record", "/BorrowRecordServlet");
                 put("Stock Update", "/StockUpdateServlet");
             }

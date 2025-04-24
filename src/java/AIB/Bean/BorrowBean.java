@@ -6,95 +6,131 @@ package AIB.Bean;
 
 import java.beans.*;
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import AIB.algorithm.SnowflakeSingleton;
-import AIB.db.ITP4511_DB;
-
+import java.sql.Timestamp;
 /**
  *
  * @author andyt
  */
+import java.util.ArrayList;
+
 public class BorrowBean implements Serializable {
 
-    private final ITP4511_DB db;
+    /*
+     * SELECT
+     * b.id AS borrowId,
+     * b.DT AS borrowDate,
+     * b.state AS borrowState,
+     * sourceShop.id AS sourceShopId,
+     * sourceShop.name AS sourceShopName,
+     * destinationShop.id AS destinationShopId,
+     * destinationShop.name AS destinationShopName,
+     * f.id AS fruitId,
+     * f.name AS fruitName,
+     * f.unit AS fruitUnit,
+     * bd.num AS fruitQuantity
+     * FROM
+     * borrow b
+     * INNER JOIN shop sourceShop ON b.sourceShopid = sourceShop.id
+     * INNER JOIN shop destinationShop ON b.destinationShopid = destinationShop.id
+     * INNER JOIN borrowDetail bd ON b.id = bd.borrowid
+     * INNER JOIN fruit f ON bd.fruitid = f.id;
+     */
 
-    public BorrowBean(ITP4511_DB db) {
-        this.db = db;
+    private Long borrowId;
+    private Timestamp borrowDate;
+    private String borrowState;
+    private Long sourceShopId;//出貨商店ID
+    private String sourceShopName;
+    private Long destinationShopId;//借貨商店ID
+    private String destinationShopName;
+    private ArrayList<FruitBean> fruits = new ArrayList<>();
+    private int itemCount = 0;
+
+    public int getItemCount() {
+        return this.itemCount;
     }
 
-    public Map<String, Map<String, Object>> getCityShopsStock(long currentShopId, long cityId) throws SQLException {
-        Map<String, Map<String, Object>> result = new LinkedHashMap<>();
-        String sql = "SELECT s.id AS shopId, s.name AS shopName, f.id AS fruitId, f.name AS fruitName, ss.num "
-                + "FROM shop s "
-                + "JOIN shopStock ss ON s.id = ss.shopid "
-                + "JOIN fruit f ON ss.fruitid = f.id "
-                + "WHERE s.cityid = ? AND s.id != ?";
+    public void setItemCount(int itemCount) {
+        this.itemCount = itemCount;
+    }
+    // Item count for the borrow record
 
-        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, cityId);
-            stmt.setLong(2, currentShopId);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                String key = rs.getLong("shopId") + "|" + rs.getLong("fruitId");
-                Map<String, Object> item = new HashMap<>();
-                item.put("shopName", rs.getString("shopName"));
-                item.put("fruitName", rs.getString("fruitName"));
-                item.put("quantity", rs.getInt("num"));
-                result.put(key, item);
-            }
-        }
-        return result;
+    public Long getBorrowId() {
+        return this.borrowId;
     }
 
-    public boolean createBorrowRequest(long sourceShopId, long destShopId, Map<Long, Integer> items) throws SQLException {
-        Connection conn = null;
-        try {
-            conn = db.getConnection();
-            conn.setAutoCommit(false);
-
-            long borrowId = SnowflakeSingleton.getInstance().nextId();
-
-            // Create borrow record
-            String borrowSql = "INSERT INTO borrow (id, sourceShopid, destinationShopid, state) VALUES (?, ?, ?, 'C')";
-            try (PreparedStatement stmt = conn.prepareStatement(borrowSql)) {
-                stmt.setLong(1, borrowId);
-                stmt.setLong(2, sourceShopId);
-                stmt.setLong(3, destShopId);
-                stmt.executeUpdate();
-            }
-
-            // Add borrow details
-            String detailSql = "INSERT INTO borrowDetail (borrowid, fruitid, num) VALUES (?, ?, ?)";
-            try (PreparedStatement stmt = conn.prepareStatement(detailSql)) {
-                for (Map.Entry<Long, Integer> entry : items.entrySet()) {
-                    stmt.setLong(1, borrowId);
-                    stmt.setLong(2, entry.getKey());
-                    stmt.setInt(3, entry.getValue());
-                    stmt.addBatch();
-                }
-                stmt.executeBatch();
-            }
-
-            conn.commit();
-            return true;
-        } catch (SQLException e) {
-            if (conn != null) {
-                conn.rollback();
-            }
-            throw e;
-        } finally {
-            if (conn != null) {
-                conn.close();
-            }
-        }
+    public void setBorrowId(Long borrowId) {
+        this.borrowId = borrowId;
     }
 
+    public Timestamp getBorrowDate() {
+        return this.borrowDate;
+    }
+
+    public void setBorrowDate(Timestamp borrowDate) {
+        this.borrowDate = borrowDate;
+    }
+
+    public String getBorrowState() {
+        return this.borrowState;
+    }
+
+    public void setBorrowState(String borrowState) {
+        this.borrowState = borrowState;
+    }
+
+    public Long getSourceShopId() {
+        return this.sourceShopId;
+    }
+
+    public void setSourceShopId(Long sourceShopId) {
+        this.sourceShopId = sourceShopId;
+    }
+
+    public String getSourceShopName() {
+        return this.sourceShopName;
+    }
+
+    public void setSourceShopName(String sourceShopName) {
+        this.sourceShopName = sourceShopName;
+    }
+
+    public Long getDestinationShopId() {
+        return this.destinationShopId;
+    }
+
+    public void setDestinationShopId(Long destinationShopId) {
+        this.destinationShopId = destinationShopId;
+    }
+
+    public String getDestinationShopName() {
+        return this.destinationShopName;
+    }
+
+    public void setDestinationShopName(String destinationShopName) {
+        this.destinationShopName = destinationShopName;
+    }
+
+    public ArrayList<FruitBean> getFruits() {
+        return this.fruits;
+    }
+
+    public void setFruits(ArrayList<FruitBean> fruits) {
+        this.fruits = fruits;
+    }
+
+    public BorrowBean() {
+    }
+
+    public BorrowBean(Long borrowId, Timestamp borrowDate, String borrowState, Long sourceShopId, String sourceShopName,
+            Long destinationShopId, String destinationShopName) {
+        this.borrowId = borrowId;
+        this.borrowDate = borrowDate;
+        this.borrowState = borrowState;
+        this.sourceShopId = sourceShopId;
+        this.sourceShopName = sourceShopName;
+        this.destinationShopId = destinationShopId;
+        this.destinationShopName = destinationShopName;
+
+    }
 }

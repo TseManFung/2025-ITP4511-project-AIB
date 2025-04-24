@@ -1,4 +1,5 @@
 <%@ page isErrorPage="true" %>
+<%@ page import="java.io.StringWriter, java.io.PrintWriter" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,7 +29,16 @@
                             <strong>Stack Trace:</strong>
                         </p>
                         <pre class="bg-light p-3">
-                            <%= exception != null ? exception.toString() : "No stack trace available." %>
+                            <%
+                                if (exception != null) {
+                                    StringWriter sw = new StringWriter();
+                                    PrintWriter pw = new PrintWriter(sw);
+                                    exception.printStackTrace(pw);
+                                    out.print(sw.toString().trim());
+                                } else {
+                                    out.print("No stack trace available.");
+                                }
+                            %>
                         </pre>
                         <a href="<%= request.getContextPath() %>/" class="btn btn-primary mt-3">Go to Homepage</a>
                     </div>

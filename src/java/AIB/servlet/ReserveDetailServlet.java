@@ -4,7 +4,8 @@
  */
 package AIB.servlet;
 
-import AIB.Bean.ReserveRecordBean;
+import AIB.Bean.ReserveBean;
+import AIB.DL.ReserveRecord;
 import AIB.db.ITP4511_DB;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,6 +14,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.SQLException;
 import java.util.Map;
 
 /**
@@ -22,7 +24,7 @@ import java.util.Map;
 @WebServlet(name = "ReserveDetailServlet", urlPatterns = {"/ReserveDetailServlet","/Shop/ReserveDetail"})
 public class ReserveDetailServlet extends HttpServlet {
 
-    private ReserveRecordBean recordBean;
+    private ReserveRecord recordBean;
 
     @Override
     public void init() throws ServletException {
@@ -32,7 +34,7 @@ public class ReserveDetailServlet extends HttpServlet {
                 getServletContext().getInitParameter("dbUser"),
                 getServletContext().getInitParameter("dbPassword")
         );
-        recordBean = new ReserveRecordBean(db);
+        recordBean = new ReserveRecord(db);
     }
 
     /**
@@ -75,11 +77,11 @@ public class ReserveDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             long reserveId = Long.parseLong(request.getParameter("id"));
-            Map<String, Object> details = recordBean.getReserveDetails(reserveId);
+            ReserveBean details = recordBean.getReserveDetails(reserveId);
             request.setAttribute("details", details);
             request.getRequestDispatcher("/Shop/reserveDetail.jsp").forward(request, response);
-        } catch (Exception e) {
-            response.sendRedirect("reserveRecords?error=2");
+        } catch (SQLException e) {
+            response.sendRedirect("ReserveRecordServlet?error=2");
         }
     }
 

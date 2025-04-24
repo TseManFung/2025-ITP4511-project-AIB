@@ -1,11 +1,12 @@
-<%-- 
-    Document   : reserveRecords
-    Created on : 2025年4月23日, 上午10:05:23
-    Author     : andyt
---%>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.util.List" %>
+<%@ page import="AIB.Bean.ReserveBean" %>
+<%!
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+%>
 <!DOCTYPE html>
 <html>
     <head>
@@ -13,17 +14,21 @@
         <title>Reservation Records</title>
         <style>
             .state-C {
-                background-color: blue;
+                background-color: rgb(129, 143, 230);
             }
+
             .state-A {
                 background-color: greenyellow;
             }
+
             .state-R {
                 background-color: #dc3545;
             }
+
             .state-F {
                 background-color: grey;
             }
+
             .state-badge {
                 padding: 3px 8px;
                 border-radius: 12px;
@@ -31,18 +36,6 @@
         </style>
     </head>
     <body>
-        <%!
-            public String getErrorMessage(int errorCode) {
-                switch (errorCode) {
-                    case 1:
-                        return "Invalid reservation ID.";
-                    case 2:
-                        return "Database error occurred.";
-                    default:
-                        return "An unknown error occurred.";
-                }
-            }
-        %>
         <jsp:include page="/component/modal.jsp" />
 
         <component:navbar />
@@ -57,20 +50,30 @@
                 <h2 class="mb-4">Reservation Records</h2>
 
                 <%-- 顯示成功或錯誤訊息 --%>
-                <%
+                <% 
                     String successMessage = request.getParameter("success");
                     String errorMessage = null;
                     if (request.getParameter("error") != null) {
                         int errorCode = Integer.parseInt(request.getParameter("error"));
-                        errorMessage = getErrorMessage(errorCode);
+                        switch (errorCode) {
+                            case 1:
+                                errorMessage = "Invalid reservation ID.";
+                                break;
+                            case 2:
+                                errorMessage = "Database error occurred.";
+                                break;
+                            default:
+                                errorMessage = "An unknown error occurred.";
+                                break;
+                        }
                     }
                 %>
                 <% if (successMessage != null) { %>
-                <div class="alert alert-success">Reservation completed successfully</div>
+                <div class="alert alert-success">Reservation #<%= successMessage %> completed successfully</div>
                 <% } %>
-                <% if (errorMessage != null) {%>
-                <div class="alert alert-danger"><%= errorMessage%></div>
-                <% }%>
+                <% if (errorMessage != null) { %>
+                <div class="alert alert-danger"><%= errorMessage %></div>
+                <% } %>
 
                 <div class="card mb-4">
                     <div class="card-header">Filter & Sort</div>
@@ -79,19 +82,20 @@
                             <div class="col-md-4">
                                 <label class="form-label">Filter by Status:</label>
                                 <select name="filter" class="form-select" onchange="this.form.submit()">
-                                    <option value="">All</option>
-                                    <option value="C" <%= "C".equals(request.getParameter("filter")) ? "selected" : ""%>>Created</option>
-                                    <option value="A" <%= "A".equals(request.getParameter("filter")) ? "selected" : ""%>>Approved</option>
-                                    <option value="R" <%= "R".equals(request.getParameter("filter")) ? "selected" : ""%>>Rejected</option>
+                                    <option value="">Default</option>
+                                    <option value="C" <%= "C".equals(request.getParameter("filter")) ? "selected" : "" %>>Created</option>
+                                    <option value="A" <%= "A".equals(request.getParameter("filter")) ? "selected" : "" %>>Approved</option>
+                                    <option value="R" <%= "R".equals(request.getParameter("filter")) ? "selected" : "" %>>Rejected</option>
+                                    <option value="F" <%= "F".equals(request.getParameter("filter")) ? "selected" : "" %>>Finished</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Sort by:</label>
                                 <select name="sort" class="form-select" onchange="this.form.submit()">
                                     <option value="">Default</option>
-                                    <option value="date" <%= "date".equals(request.getParameter("sort")) ? "selected" : ""%>>Create Date</option>
-                                    <option value="reserveDate" <%= "reserveDate".equals(request.getParameter("sort")) ? "selected" : ""%>>Reserve Date</option>
-                                    <option value="status" <%= "status".equals(request.getParameter("sort")) ? "selected" : ""%>>Status</option>
+                                    <option value="date" <%= "date".equals(request.getParameter("sort")) ? "selected" : "" %>>Create Date</option>
+                                    <option value="reserveDate" <%= "reserveDate".equals(request.getParameter("sort")) ? "selected" : "" %>>Reserve Date</option>
+                                    <option value="status" <%= "status".equals(request.getParameter("sort")) ? "selected" : "" %>>Status</option>
                                 </select>
                             </div>
                         </form>
@@ -110,61 +114,76 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <%
-                            java.util.List<java.util.Map<String, Object>> records
-                                    = (java.util.List<java.util.Map<String, Object>>) request.getAttribute("records");
-                            if (records != null && !records.isEmpty()) {
-                                for (java.util.Map<String, Object> record : records) {
-                                    String id = (String) record.get("id");
-                                    String createDate = (String) record.get("DT");
-                                    String reserveDate = (String) record.get("reserveDT");
-                                    int itemCount = (int) record.get("itemCount");
-                                    String state = (String) record.get("state");
+                        <%-- 使用 <jsp:useBean> 和 ReserveBean 來顯示資料 --%>
+                        <jsp:useBean id="records" type="java.util.List" scope="request" />
+                        <% 
+                            List<ReserveBean> reserveRecords = (List<ReserveBean>) request.getAttribute("records");
+                            if (reserveRecords != null && !reserveRecords.isEmpty()) {
+                                for (ReserveBean record : reserveRecords) {
                         %>
-                        <tr class="state-<%= state%>">
-                            <td><%= id%></td>
-                            <td><%= createDate%></td>
-                            <td><%= reserveDate%></td>
-                            <td><%= itemCount%></td>
+                        <tr class="state-<%= record.getState() %>">
+                            <td><%= record.getId() %></td>
+                            <td><%= dateFormat.format(record.getDT()) %></td>
+                            <td><%= dateFormat.format(record.getReserveDT()) %></td>
+                            <td><%= record.getItemCount() %></td>
                             <td>
-                                <span class="state-badge state-<%= state%>">
-                                    <%= state%>
+                                <span class="state-badge state-<%= record.getState() %>">
+                                    <%
+                                        String stateText;
+                                        switch (record.getState()) {
+                                            case "C":
+                                                stateText = "Created";
+                                                break;
+                                            case "A":
+                                                stateText = "Approved";
+                                                break;
+                                            case "R":
+                                                stateText = "Rejected";
+                                                break;
+                                            case "F":
+                                                stateText = "Finished";
+                                                break;
+                                            default:
+                                                stateText = "Unknown";
+                                                break;
+                                        }
+                                    %>
+                                    <%= stateText %>
                                 </span>
                             </td>
                             <td>
-                                <% if ("A".equals(state)) {%>
+                                <% if ("A".equals(record.getState())) { %>
                                 <form method="post" style="display:inline">
-                                    <input type="hidden" name="reserveId" value="<%= id%>">
-                                    <button type="submit" class="btn btn-sm btn-success" 
-                                            onclick="return confirm('Mark as completed?')">Complete</button>
+                                    <input type="hidden" name="reserveId" value="<%= record.getId() %>">
+                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Mark as completed?')">Complete</button>
                                 </form>
-                                <% }%>
-                                <a href="reserveDetail?id=<%= id%>" class="btn btn-sm btn-info">Details</a>
+                                <% } %>
+                                <a href="ReserveDetailServlet?id=<%= record.getId() %>" class="btn btn-sm btn-info">Details</a>
                             </td>
                         </tr>
-                        <%
-                            }
-                        } else {
+                        <% 
+                                }
+                            } else { 
                         %>
                         <tr>
                             <td colspan="6" class="text-center">No reservation records available</td>
                         </tr>
-                        <% }%>
+                        <% } %>
                     </tbody>
                 </table>
-            </div> 
+            </div>
         </div>
         <!-- /content -->
 
         <!-- GoToTop -->
         <div id="page-top" style="">
-            <a href="#header"><img src="<%= request.getContextPath()%>/images/common/returan-top.png" /></a>
+            <a href="#header"><img src="<%= request.getContextPath() %>/images/common/returan-top.png" /></a>
         </div>
         <!-- /GoToTop -->
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>      
+                crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
     </body>
 </html>

@@ -4,7 +4,9 @@
  */
 package AIB.servlet;
 
-import AIB.Bean.BorrowRecordsBean;
+import AIB.Bean.BorrowBean;
+import AIB.Bean.ReserveBean;
+import AIB.DL.BorrowRecord;
 import AIB.db.ITP4511_DB;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,16 +15,18 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
+import java.sql.SQLException;
 
 /**
  *
  * @author andyt
  */
-@WebServlet(name = "BorrowRecordsDetailServlet", urlPatterns = {"/BorrowRecordsDetailServlet", "/Shop/BorrowRecordsDetail"})
+@WebServlet(name = "BorrowRecordsDetailServlet", urlPatterns = {"/BorrowRecordsDetailServlet","/BorrowRecordDetailServlet", "/Shop/BorrowRecordsDetail"})
 public class BorrowRecordsDetailServlet extends HttpServlet {
 
-    private BorrowRecordsBean recordsBean;
+    private BorrowRecord borrowRecords;
 
     @Override
     public void init() throws ServletException {
@@ -30,7 +34,7 @@ public class BorrowRecordsDetailServlet extends HttpServlet {
                 getServletContext().getInitParameter("dbUrl"),
                 getServletContext().getInitParameter("dbUser"),
                 getServletContext().getInitParameter("dbPassword"));
-        recordsBean = new BorrowRecordsBean(db);
+        borrowRecords = new BorrowRecord(db);
     }
 
     /**
@@ -74,10 +78,10 @@ public class BorrowRecordsDetailServlet extends HttpServlet {
         long recordId = Long.parseLong(request.getParameter("id"));
 
         try {
-            Map<String, Object> details = recordsBean.getRecordDetails(recordId);
-            request.setAttribute("detail", details);
-            request.getRequestDispatcher("/Shop/borrowRecordDetail.jsp").forward(request, response);
-        } catch (Exception e) {
+            BorrowBean details = borrowRecords.getBorrowDetails(recordId);
+            request.setAttribute("details", details);
+            request.getRequestDispatcher("/Shop/borrowDetail.jsp").forward(request, response);
+        } catch (SQLException e) {
             throw new ServletException("Database error", e);
         }
     }

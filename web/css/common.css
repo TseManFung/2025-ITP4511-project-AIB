@@ -532,9 +532,9 @@ td {
   vertical-align: middle;
 }
 
-.card-header {
+/* .card-header {
   background-color: aliceblue !important;
-}
+} */
 
 .progress-bar {
   border-radius: 16px !important;

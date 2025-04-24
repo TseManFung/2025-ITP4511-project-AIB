@@ -10,7 +10,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import AIB.Bean.ReserveRecordBean;
+import AIB.Bean.ReserveBean;
+import AIB.DL.ReserveRecord;
 import AIB.db.ITP4511_DB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -26,7 +27,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "ReserveRecordServlet", urlPatterns = {"/ReserveRecordServlet", "/Shop/ReserveRecord"})
 public class ReserveRecordServlet extends HttpServlet {
 
-    private ReserveRecordBean recordBean;
+    private ReserveRecord recordBean;
 
     @Override
     public void init() throws ServletException {
@@ -35,7 +36,7 @@ public class ReserveRecordServlet extends HttpServlet {
                 getServletContext().getInitParameter("dbUrl"),
                 getServletContext().getInitParameter("dbUser"),
                 getServletContext().getInitParameter("dbPassword"));
-        recordBean = new ReserveRecordBean(db);
+        recordBean = new ReserveRecord(db);
     }
 
     /**
@@ -88,7 +89,7 @@ public class ReserveRecordServlet extends HttpServlet {
             String filter = request.getParameter("filter");
             String sort = request.getParameter("sort");
 
-            List<Map<String, Object>> records = recordBean.getReserveRecords(shopId, filter, sort);
+            List<ReserveBean> records = recordBean.getReserveRecords(shopId, filter, sort);
             request.setAttribute("records", records);
             request.getRequestDispatcher("/Shop/reserveRecords.jsp").forward(request, response);
         } catch (SQLException e) {
@@ -108,14 +109,20 @@ public class ReserveRecordServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            long reserveId = Long.parseLong(request.getParameter("reserveId"));
-            if (recordBean.completeReservation(reserveId)) {
-                response.sendRedirect("reserveRecords?success=1");
-            } else {
-                response.sendRedirect("reserveRecords?error=1");
+            HttpSession session = request.getSession();
+            Long shopId = (Long) session.getAttribute("shopId");
+            if (shopId == null) {
+                response.sendRedirect(request.getContextPath() + "/login.jsp");
+                return;
             }
-        } catch (Exception e) {
-            response.sendRedirect("reserveRecords?error=2");
+            long reserveId = Long.parseLong(request.getParameter("reserveId"));
+            if (recordBean.completeReservation(reserveId,shopId)) {
+                response.sendRedirect("ReserveRecordServlet?success="+reserveId);
+            } else {
+                response.sendRedirect("ReserveRecordServlet?error=1");
+            }
+        } catch (SQLException e) {
+            response.sendRedirect("ReserveRecordServlet?error=2");
         }
     }
 

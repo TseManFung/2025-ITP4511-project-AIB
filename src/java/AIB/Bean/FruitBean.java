@@ -8,6 +8,15 @@ public class FruitBean implements Serializable {
     private Long sourceCountryId;
     private String name;
     private String unit;
+    private int quantity;
+
+    public int getQuantity() {
+        return this.quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 
     // Default constructor
     public FruitBean() {
@@ -19,6 +28,14 @@ public class FruitBean implements Serializable {
         this.sourceCountryId = sourceCountryId;
         this.name = name;
         this.unit = unit;
+    }
+
+    public FruitBean(Long id, Long sourceCountryId, String name, String unit, int quantity) {
+        this.id = id;
+        this.sourceCountryId = sourceCountryId;
+        this.name = name;
+        this.unit = unit;
+        this.quantity = quantity;
     }
 
     // Getters and Setters

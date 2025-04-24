@@ -12,9 +12,7 @@
 <html>
     <head>
         <jsp:include page="/component/head.jsp" />
-        <title>Update stock result</title>
-
-
+        <title>Update Stock Result</title>
     </head>
     <body>
         <jsp:include page="/component/modal.jsp" />
@@ -34,6 +32,7 @@
                     <thead class="thead-dark">
                         <tr>
                             <th>Fruit ID</th>
+                            <th>Fruit Name</th>
                             <th>Original Qty</th>
                             <th>New Qty</th>
                             <th>Consumed</th>
@@ -41,30 +40,38 @@
                     </thead>
                     <tbody>
                         <%
-                            Map<String, Integer> original = (Map<String, Integer>) request.getAttribute("original");
-                            Map<String, Integer> updated = (Map<String, Integer>) request.getAttribute("updated");
+                            Map<Long, Map<String, Object>> result = (Map<Long, Map<String, Object>>) request.getAttribute("result");
 
-                            if (original != null && updated != null) {
-                                for (Map.Entry<String, Integer> entry : original.entrySet()) {
-                                    String fruitId = entry.getKey();
-                                    int originalQty = entry.getValue();
-                                    int newQty = updated.get(fruitId) != null ? updated.get(fruitId) : 0;
-                                    int consumed = originalQty - newQty;
+                            if (result != null) {
+                                for (Map.Entry<Long, Map<String, Object>> entry : result.entrySet()) {
+                                    Long fruitId = entry.getKey();
+                                    Map<String, Object> fruitData = entry.getValue();
+                                    String fruitName = (String) fruitData.get("name");
+                                    int originalQty = (int) fruitData.get("originalNum");
+                                    int newQty = (int) fruitData.get("updatedNum");
+                                    int consumed = (int) fruitData.get("consumeNum");
                         %>
                         <tr>
-                            <td><%= fruitId%></td>
-                            <td><%= originalQty%></td>
-                            <td><%= newQty%></td>
-                            <td><%= consumed%></td>
+                            <td><%= fruitId %></td>
+                            <td><%= fruitName %></td>
+                            <td><%= originalQty %></td>
+                            <td><%= newQty %></td>
+                            <td><%= consumed %></td>
                         </tr>
                         <%
                                 }
+                            } else {
+                        %>
+                        <tr>
+                            <td colspan="5" class="text-center">No update results available</td>
+                        </tr>
+                        <%
                             }
                         %>
                     </tbody>
                 </table>
 
-                <a href="updateStock" class="btn btn-secondary">Back to Update</a>
+                <a href="StockUpdateServlet" class="btn btn-secondary">Back to Update</a>
             </div> 
         </div>
         <!-- /content -->
