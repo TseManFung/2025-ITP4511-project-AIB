@@ -26,7 +26,7 @@ import AIB.db.ITP4511_DB;
  */
 public class Reservation implements Serializable {
 
-    private final ITP4511_DB db;
+    private ITP4511_DB db;
 
     public Reservation(ITP4511_DB db) {
         this.db = db;

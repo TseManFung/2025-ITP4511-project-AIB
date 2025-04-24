@@ -27,15 +27,15 @@ import AIB.db.ITP4511_DB;
  */
 public class Borrow implements Serializable {
 
-    private final ITP4511_DB db;
+    private ITP4511_DB db;
 
     public Borrow(ITP4511_DB db) {
         this.db = db;
     }
 
-    public List<ShopBean> getCityShopsStock(long currentShopId, long cityId) throws SQLException {
+    public List<ShopBean> getCityShopsStock(long currentShopId, long cityId,long targetShopId) throws SQLException {
         List<ShopBean> shopList = new ArrayList<>();
-String sql = "SELECT " +
+        String sql = "SELECT " +
         "shop.id AS shopId, " +
         "shop.name AS shopName, " +
         "city.id AS cityId, " +
@@ -45,34 +45,22 @@ String sql = "SELECT " +
         "shopStock.fruitid AS fruitId, " +
         "fruit.name AS fruitName, " +
         "fruit.unit AS fruitUnit, " +
-        "(shopStock.num - COALESCE(borrowed.num, 0)) AS availableQuantity " +
-        "FROM " +
-        "shop " +
+        "(shopStock.num - COALESCE(SUM(bd.num), 0)) AS availableQuantity " +
+        "FROM shop " +
         "INNER JOIN city ON shop.cityid = city.id " +
         "INNER JOIN country ON city.countryid = country.id " +
         "INNER JOIN shopStock ON shop.id = shopStock.shopid " +
         "INNER JOIN fruit ON shopStock.fruitid = fruit.id " +
-        "LEFT JOIN ( " +
-        "SELECT " +
-        "bd.fruitid, " +
-        "b.sourceShopid, " +
-        "SUM(bd.num) AS num " +
-        "FROM " +
-        "borrow b " +
-        "INNER JOIN borrowDetail bd ON b.id = bd.borrowid " +
-        "WHERE " +
-        "b.state = 'C' " +
-        "GROUP BY " +
-        "bd.fruitid, b.sourceShopid " +
-        ") AS borrowed ON shop.id = borrowed.sourceShopid AND shopStock.fruitid = borrowed.fruitid " +
-        "WHERE " +
-        "shop.cityid = ? AND shop.id != ? " +
-        "ORDER BY " +
-        "shop.id;";
+        "LEFT JOIN borrow ON borrow.sourceShopid = shop.id AND borrow.state = 'C' " +
+        "LEFT JOIN borrowDetail bd ON shopStock.fruitid = bd.fruitid " +
+        "WHERE shop.cityid = ? AND shop.id != ? AND shop.id = ? " +
+        "GROUP BY shopStock.fruitid " +
+        "ORDER BY shop.id";
 
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, cityId);
             stmt.setLong(2, currentShopId);
+            stmt.setLong(3, targetShopId);
             ResultSet rs = stmt.executeQuery();
 
             Long currentShopIdInLoop = null;
@@ -96,7 +84,7 @@ String sql = "SELECT " +
                     fruit.setId(rs.getLong("fruitId"));
                     fruit.setName(rs.getString("fruitName"));
                     fruit.setUnit(rs.getString("fruitUnit"));
-                    fruit.setQuantity(rs.getInt("stockQuantity"));
+                    fruit.setQuantity(rs.getInt("availableQuantity")); // 修正這一行
                     currentShop.getFruits().add(fruit);
                 }
             }
@@ -106,6 +94,42 @@ String sql = "SELECT " +
             }
         }
 
+        return shopList;
+    }
+
+    public List<ShopBean> getCityShopsStock(long currentShopId, long cityId) throws SQLException {
+        List<ShopBean> shopList = new ArrayList<>();
+        String sql = "SELECT " +
+                "shop.id AS shopId, " +
+                "shop.name AS shopName, " +
+                "city.id AS cityId, " +
+                "city.name AS cityName, " +
+                "country.id AS countryId, " +
+                "country.name AS countryName " +
+                "FROM shop " +
+                "INNER JOIN city ON shop.cityid = city.id " +
+                "INNER JOIN country ON city.countryid = country.id " +
+                "WHERE shop.cityid = ? AND shop.id != ? " +
+                "ORDER BY shop.id";
+    
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, cityId);
+            stmt.setLong(2, currentShopId);
+            ResultSet rs = stmt.executeQuery();
+    
+            while (rs.next()) {
+                ShopBean shop = new ShopBean(
+                        rs.getLong("shopId"),
+                        rs.getString("shopName"),
+                        rs.getLong("cityId"),
+                        rs.getString("cityName"),
+                        rs.getLong("countryId"),
+                        rs.getString("countryName")
+                );
+                shopList.add(shop);
+            }
+        }
+    
         return shopList;
     }
 

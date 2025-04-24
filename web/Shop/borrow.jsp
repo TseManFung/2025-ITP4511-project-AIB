@@ -1,18 +1,14 @@
-<%-- 
-    Document   : reserve
-    Created on : 2025年4月23日, 上午10:01:30
-    Author     : andyt
---%>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <%@ page import="java.util.List" %>
+<%@ page import="AIB.Bean.ShopBean" %>
 <%@ page import="AIB.Bean.FruitBean" %>
 <!DOCTYPE html>
 <html>
     <head>
         <jsp:include page="/component/head.jsp" />
-        <title>Fruit Reservation</title>
+        <title>Borrow Fruits</title>
     </head>
     <body>
         <jsp:include page="/component/modal.jsp" />
@@ -26,63 +22,81 @@
         <!-- content -->
         <div class="d-flex position-relative content-bg justify-content-center">
             <div class="container">
-                <h2 class="mb-4">Fruit Reservation</h2>
+                <h2 class="mb-4">Borrow Fruits</h2>
 
-                <%-- 顯示錯誤訊息 --%>
+                <%-- 顯示成功或錯誤訊息 --%>
                 <%
+                String targetShopId = request.getParameter("targetShopId");
+                    String successMessage = request.getParameter("success");
                     String errorMessage = null;
                     if (request.getParameter("error") != null) {
                         int errorCode = Integer.parseInt(request.getParameter("error"));
                         switch (errorCode) {
                             case 1:
-                                errorMessage = "Invalid reservation quantity";
+                                errorMessage = "Invalid borrow quantity.";
                                 break;
                             case 2:
-                                errorMessage = "Database error occurred";
+                                errorMessage = "Database error occurred.";
                                 break;
                             default:
-                                errorMessage = "Unknown error";
+                                errorMessage = "Unknown error.";
                         }
                     }
-
-                    if (request.getParameter("success") != null) {
                 %>
+                <% if (successMessage != null) { %>
                 <div class="alert alert-success">
-                    Reservation successful! Your reservation ID is: <%= request.getParameter("success") %>
+                    Borrow request submitted successfully! Your borrow ID is: <%= successMessage %>
                 </div>
                 <% } %>
-                
                 <% if (errorMessage != null) { %>
                 <div class="alert alert-danger">
                     <%= errorMessage %>
                 </div>
                 <% } %>
 
-                <%-- 使用 jsp:useBean 來處理 FruitBean 資料 --%>
-                <jsp:useBean id="fruits" type="java.util.List<FruitBean>" scope="request" />
-                <form method="post">
+                <%-- 使用 jsp:useBean 來處理 ShopBean 資料 --%>
+                <jsp:useBean id="stocks" type="java.util.List<AIB.Bean.ShopBean>" scope="request" />
+                <form method="get" action="BorrowServlet">
                     <div class="mb-3">
-                        <label for="reserveDT" class="form-label">Reservation Date</label>
-                        <input type="date" id="reserveDT" name="reserveDT" class="form-control" required
-                               min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) %>"
-                               max="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 14L * 24 * 60 * 60 * 1000)) %>"
-                               value="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 14L * 24 * 60 * 60 * 1000)) %>">
+                        <label for="targetShopId" class="form-label">Select Target Shop</label>
+                        <select id="targetShopId" name="targetShopId" class="form-select" required>
+                            <option value="" disabled selected>Select a shop</option>
+                            <% if (stocks != null && !stocks.isEmpty()) {
+                                for (ShopBean shop : stocks) { %>
+                                    <option value="<%= shop.getShopid() %>" 
+                                            <%= targetShopId != null && Long.parseLong(targetShopId) == shop.getShopid() ? "selected" : "" %>>
+                                        <%= shop.getShopName() %> - <%= shop.getCityName() %>, <%= shop.getCountryName() %>
+                                    </option>
+                            <% } } %>
+                        </select>
                     </div>
+                    <button type="submit" class="btn btn-secondary">Load Fruits</button>
+                </form>
+
+                <br><br>
+                <%-- 如果有選擇目標商店，顯示水果列表 --%>
+                <%
+                    
+                    if (targetShopId != null && !targetShopId.isEmpty()) {
+                        %>
+                <form method="post" action="BorrowServlet">
+                    <input type="hidden" name="sourceShopId" value="<%= targetShopId %>">
+
                     <table class="table table-striped">
                         <thead class="thead-dark">
                             <tr>
                                 <th>Fruit Name</th>
                                 <th>Available Quantity</th>
                                 <th>Unit</th>
-                                <th>Reserve Quantity</th>
+                                <th>Borrow Quantity</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <%
-                                if (fruits != null && !fruits.isEmpty()) {
-                                    for (FruitBean fruit : fruits) {
-                                        if (fruit.getQuantity() != 0) {
-                            %>
+                            <% if (stocks != null && !stocks.isEmpty()) {
+                                for (ShopBean shop : stocks) {
+                                    for (FruitBean fruit : shop.getFruits()) { 
+                                        if (fruit.getQuantity() != 0) { %>
+                                    
                             <tr>
                                 <td><%= fruit.getName() %></td>
                                 <td><%= fruit.getQuantity() %></td>
@@ -93,19 +107,17 @@
                                            required oninput="validateQuantity(this)">
                                 </td>
                             </tr>
-                            <% 
-                                         } }
-                                } else { 
-                            %>
+                            <% } } } } else { %>
                             <tr>
-                                <td colspan="3" class="text-center">No fruits available for reservation</td>
+                                <td colspan="4" class="text-center">No fruits available for borrowing</td>
                             </tr>
                             <% } %>
                         </tbody>
                     </table>
-                    <button type="submit" class="btn btn-primary" id="submitButton" onclick="hideButtonAndSubmit(this)">Submit Reservation</button>
+                    <button type="submit" class="btn btn-primary" id="submitButton" onclick="hideButtonAndSubmit(this)">Submit Borrow Request</button>
                 </form>
-            </div> 
+                <% } %>
+            </div>
         </div>
         <!-- /content -->
 
@@ -117,8 +129,7 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>      
+                crossorigin="anonymous"></script>
         <script>
             function validateQuantity(input) {
                 const max = parseInt(input.max);
@@ -128,15 +139,15 @@
                     input.setCustomValidity('');
                 }
             }
-        
+
             function hideButtonAndSubmit(button) {
                 const form = button.form;
-        
+
                 if (!form.checkValidity()) {
-                    form.reportValidity(); 
-                    return; 
+                    form.reportValidity();
+                    return;
                 }
-        
+
                 button.style.display = 'none';
                 form.submit();
             }

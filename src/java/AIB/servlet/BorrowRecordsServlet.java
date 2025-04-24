@@ -4,8 +4,7 @@
  */
 package AIB.servlet;
 
-import AIB.BorrowBean;
-import AIB.BorrowRecordsBean;
+import AIB.DL.BorrowRecord;
 import AIB.db.ITP4511_DB;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -20,10 +19,10 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author andyt
  */
-@WebServlet(name = "BorrowRecordsServlet", urlPatterns = {"/BorrowRecordServlet", "/Shop/BorrowRecords"})
+@WebServlet(name = "BorrowRecordsServlet", urlPatterns = {"/BorrowRecordsServlet","/BorrowRecordServlet", "/Shop/BorrowRecords"})
 public class BorrowRecordsServlet extends HttpServlet {
 
-    private BorrowRecordsBean recordsBean;
+    private BorrowRecord borrowedRecords;
 
     @Override
     public void init() throws ServletException {
@@ -31,8 +30,7 @@ public class BorrowRecordsServlet extends HttpServlet {
                 getServletContext().getInitParameter("dbUrl"),
                 getServletContext().getInitParameter("dbUser"),
                 getServletContext().getInitParameter("dbPassword"));
-        BorrowBean borrowBean = new BorrowBean(db);
-        recordsBean = new BorrowRecordsBean(db,borrowBean);
+        borrowedRecords = new BorrowRecord(db);
         
     }
 
@@ -76,9 +74,15 @@ public class BorrowRecordsServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession();
         Long shopId = (Long) session.getAttribute("shopId");
+        if (shopId == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
 
+        String filter = request.getParameter("filter");
+        String sort = request.getParameter("sort");
         try {
-            request.setAttribute("records", recordsBean.getBorrowRecords(shopId));
+            request.setAttribute("records", borrowedRecords.getBorrowRecords(shopId,filter, sort));
             request.getRequestDispatcher("/Shop/borrowRecords.jsp").forward(request, response);
         } catch (Exception e) {
             throw new ServletException("Database error", e);
@@ -103,19 +107,19 @@ public class BorrowRecordsServlet extends HttpServlet {
 
         try {
             switch (action) {
-                case "approve":
-                    recordsBean.updateRecordState(recordId, "A", shopId);
+                case "accept":
+                    borrowedRecords.updateRecordState(recordId, "A", shopId);
                     break;
                 case "reject":
-                    recordsBean.updateRecordState(recordId, "R", shopId);
+                    borrowedRecords.updateRecordState(recordId, "R", shopId);
                     break;
                 case "complete":
-                    recordsBean.updateRecordState(recordId, "F", shopId);
+                    borrowedRecords.updateRecordState(recordId, "F", shopId);
                     break;
             }
             response.sendRedirect("BorrowRecordServlet");
         } catch (Exception e) {
-            response.sendRedirect("BorrowRecordServlet.jsp?error=1");
+            response.sendRedirect("BorrowRecordServlet?error=1");
         }
     }
 
