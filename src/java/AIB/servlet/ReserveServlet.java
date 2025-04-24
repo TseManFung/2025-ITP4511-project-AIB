@@ -11,7 +11,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import AIB.Bean.ReservationBean;
+import AIB.DL.Reservation;
 import AIB.db.ITP4511_DB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -27,7 +27,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "ReserveServlet", urlPatterns = {"/ReserveServlet", "/Shop/Reserve"})
 public class ReserveServlet extends HttpServlet {
 
-    private ReservationBean reservationBean;
+    private Reservation reservationBean;
 
     @Override
     public void init() throws ServletException {
@@ -37,7 +37,7 @@ public class ReserveServlet extends HttpServlet {
                 getServletContext().getInitParameter("dbUser"),
                 getServletContext().getInitParameter("dbPassword")
         );
-        reservationBean = new ReservationBean(db);
+        reservationBean = new Reservation(db);
     }
 
     /**

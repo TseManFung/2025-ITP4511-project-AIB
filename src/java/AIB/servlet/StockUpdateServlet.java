@@ -11,7 +11,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import AIB.Bean.StockUpdateBean;
+import AIB.DL.StockUpdate;
 import AIB.db.ITP4511_DB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -27,7 +27,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "StockUpdateServlet", urlPatterns = { "/StockUpdateServlet", "/Shop/StockUpdate" })
 public class StockUpdateServlet extends HttpServlet {
 
-    private StockUpdateBean stockBean;
+    private StockUpdate stockBean;
 
     @Override
     public void init() throws ServletException {
@@ -36,7 +36,7 @@ public class StockUpdateServlet extends HttpServlet {
                 getServletContext().getInitParameter("dbUrl"),
                 getServletContext().getInitParameter("dbUser"),
                 getServletContext().getInitParameter("dbPassword"));
-        stockBean = new StockUpdateBean(db);
+        stockBean = new StockUpdate(db);
     }
 
     /**

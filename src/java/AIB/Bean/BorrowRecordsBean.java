@@ -14,11 +14,12 @@ import java.util.*;
  * @author andyt
  */
 public class BorrowRecordsBean implements Serializable {
-
     private final ITP4511_DB db;
+    private final BorrowBean borrowBean;
 
-    public BorrowRecordsBean(ITP4511_DB db) {
+    public BorrowRecordsBean(ITP4511_DB db, BorrowBean borrowBean) {
         this.db = db;
+        this.borrowBean = borrowBean;
     }
 
     public List<Map<String, Object>> getBorrowRecords(long shopId) throws SQLException {
@@ -49,55 +50,73 @@ public class BorrowRecordsBean implements Serializable {
         return records;
     }
 
-    public Map<String, Object> getRecordDetails(long recordId) throws SQLException {
-        Map<String, Object> details = new HashMap<>();
-        String sql = "SELECT b.*, f.name AS fruitName, bd.num "
-                + "FROM borrow b "
-                + "JOIN borrowDetail bd ON b.id = bd.borrowid "
-                + "JOIN fruit f ON bd.fruitid = f.id "
-                + "WHERE b.id = ?";
-
-        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, recordId);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                details.put("id", rs.getLong("id"));
-                details.put("sourceShopId", rs.getLong("sourceShopId"));
-                details.put("destShopId", rs.getLong("destinationShopId"));
-                details.put("state", rs.getString("state"));
-                details.put("DT", rs.getTimestamp("DT"));
-
-                List<Map<String, Object>> items = new ArrayList<>();
-                do {
-                    Map<String, Object> item = new HashMap<>();
-                    item.put("name", rs.getString("fruitName"));
-                    item.put("quantity", rs.getInt("num"));
-                    items.add(item);
-                } while (rs.next());
-                details.put("items", items);
-            }
-        }
-        return details;
-    }
-
     public boolean updateRecordState(long recordId, String newState, long currentShopId) throws SQLException {
-        String checkSql = "SELECT destinationShopId FROM borrow WHERE id = ?";
-        String updateSql = "UPDATE borrow SET state = ? WHERE id = ?";
+        Connection conn = null;
+        try {
+            conn = db.getConnection();
+            conn.setAutoCommit(false);
 
-        try (Connection conn = db.getConnection(); PreparedStatement checkStmt = conn.prepareStatement(checkSql); PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
-
-            // Validate permission
+            // Get borrow details
+            String checkSql = "SELECT sourceShopId, destinationShopId, state FROM borrow WHERE id = ?";
+            PreparedStatement checkStmt = conn.prepareStatement(checkSql);
             checkStmt.setLong(1, recordId);
             ResultSet rs = checkStmt.executeQuery();
-            if (rs.next() && rs.getLong("destinationShopId") != currentShopId) {
-                return false;
+            if (!rs.next()) return false;
+
+            long sourceShopId = rs.getLong("sourceShopId");
+            long destShopId = rs.getLong("destinationShopId");
+
+            // Validate permission
+            if ("A".equals(newState) || "R".equals(newState)) {
+                if (sourceShopId != currentShopId) return false;
+            } else if ("F".equals(newState)) {
+                if (destShopId != currentShopId) return false;
             }
 
             // Update state
-            updateStmt.setString(1, newState);
-            updateStmt.setLong(2, recordId);
-            return updateStmt.executeUpdate() > 0;
+            String updateSql = "UPDATE borrow SET state = ? WHERE id = ?";
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                updateStmt.setString(1, newState);
+                updateStmt.setLong(2, recordId);
+                updateStmt.executeUpdate();
+            }
+
+            // Adjust stock based on state
+            List<Map<String, Object>> items = getBorrowDetails(recordId, conn);
+            if ("A".equals(newState)) {
+                for (Map<String, Object> item : items) {
+                    long fruitId = (Long) item.get("fruitid");
+                    int num = (Integer) item.get("num");
+                    borrowBean.updateFruitStock(sourceShopId, fruitId, -num);
+                    borrowBean.updateFruitStock(destShopId, fruitId, num);
+                }
+            } else if ("F".equals(newState)) {
+                // Additional logic if needed
+            }
+
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            if (conn != null) conn.rollback();
+            throw e;
+        } finally {
+            if (conn != null) conn.close();
         }
+    }
+
+    private List<Map<String, Object>> getBorrowDetails(long recordId, Connection conn) throws SQLException {
+        List<Map<String, Object>> items = new ArrayList<>();
+        String sql = "SELECT fruitid, num FROM borrowDetail WHERE borrowid = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, recordId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("fruitid", rs.getLong("fruitid"));
+                item.put("num", rs.getInt("num"));
+                items.add(item);
+            }
+        }
+        return items;
     }
 }

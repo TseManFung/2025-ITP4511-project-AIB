@@ -4,6 +4,7 @@
  */
 package AIB.servlet;
 
+import AIB.Bean.BorrowBean;
 import AIB.Bean.BorrowRecordsBean;
 import AIB.db.ITP4511_DB;
 import java.io.IOException;
@@ -30,7 +31,9 @@ public class BorrowRecordsServlet extends HttpServlet {
                 getServletContext().getInitParameter("dbUrl"),
                 getServletContext().getInitParameter("dbUser"),
                 getServletContext().getInitParameter("dbPassword"));
-        recordsBean = new BorrowRecordsBean(db);
+        BorrowBean borrowBean = new BorrowBean(db);
+        recordsBean = new BorrowRecordsBean(db,borrowBean);
+        
     }
 
     /**

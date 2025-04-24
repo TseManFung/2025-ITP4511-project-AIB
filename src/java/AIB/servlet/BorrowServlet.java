@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import AIB.Bean.BorrowBean;
+import AIB.Bean.ShopBean;
 import AIB.db.ITP4511_DB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -19,6 +20,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
 
 /**
  *
@@ -88,7 +90,7 @@ public class BorrowServlet extends HttpServlet {
                 return;
             }
 
-            Map<String, Map<String, Object>> stocks = borrowBean.getCityShopsStock(currentShopId, cityId);
+            List<ShopBean> stocks = borrowBean.getCityShopsStock(currentShopId, cityId);
             request.setAttribute("stocks", stocks);
             request.getRequestDispatcher("/Shop/borrow.jsp").forward(request, response);
         } catch (SQLException e) {
@@ -110,23 +112,22 @@ public class BorrowServlet extends HttpServlet {
         HttpSession session = request.getSession();
         Long sourceShopId = (Long) session.getAttribute("shopId");
         Long destShopId = Long.parseLong(request.getParameter("destShopId"));
-        Map<Long, Integer> items = new HashMap<>();
-
-        Enumeration<String> params = request.getParameterNames();
-        while (params.hasMoreElements()) {
-            String param = params.nextElement();
-            if (param.startsWith("fruit_")) {
-                Long fruitId = Long.parseLong(param.substring(6));
-                int qty = Integer.parseInt(request.getParameter(param));
-                if (qty > 0) {
-                    items.put(fruitId, qty);
-                }
-            }
-        }
+     
+Map<Long, Integer> items = new HashMap<>();
+Enumeration<String> params = request.getParameterNames();
+while (params.hasMoreElements()) {
+    String param = params.nextElement();
+    if (param.startsWith("fruit_")) {
+        Long fruitId = Long.parseLong(param.substring(6));
+        int qty = Integer.parseInt(request.getParameter(param));
+        items.put(fruitId, qty);
+    }
+}
 
         try {
-            if (!items.isEmpty() && borrowBean.createBorrowRequest(sourceShopId, destShopId, items)) {
-                response.sendRedirect("borrowSuccess.jsp");
+            if (!items.isEmpty()) {
+                long recordId = borrowBean.createBorrowRequest(sourceShopId, destShopId, items);
+                response.sendRedirect("BorrowServlet?success="+recordId);
             } else {
                 response.sendRedirect("borrow.jsp?error=1");
             }

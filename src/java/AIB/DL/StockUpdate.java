@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Beans/Bean.java to edit this template
  */
-package AIB.Bean;
+package AIB.DL;
 
 import java.beans.*;
 import java.io.Serializable;
@@ -21,11 +21,11 @@ import AIB.db.ITP4511_DB;
  *
  * @author andyt
  */
-public class StockUpdateBean implements Serializable {
+public class StockUpdate implements Serializable {
 
     private final ITP4511_DB db;
 
-    public StockUpdateBean(ITP4511_DB db) {
+    public StockUpdate(ITP4511_DB db) {
         this.db = db;
     }
 

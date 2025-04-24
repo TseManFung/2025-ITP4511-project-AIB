@@ -15,6 +15,28 @@
     <head>
         <jsp:include page="/component/head.jsp" />
         <title>Borrow record Detail</title>
+        <style>
+            .state-badge {
+                padding: 0.25em 0.4em;
+                border-radius: 0.25rem;
+            }
+
+            .state-C {
+                background-color: blue;
+            }
+
+            .state-A {
+                background-color: greenyellow;
+            }
+
+            .state-R {
+                background-color: #dc3545;
+            }
+
+            .state-F {
+                background-color: grey;
+            }
+        </style>
     </head>
     <body>
         <jsp:include page="/component/modal.jsp" />
@@ -109,7 +131,7 @@
                     </div>
 
                     <div class="card-footer text-end">
-                        <a href="BorrowRecords" class="btn btn-secondary">Back to List</a>
+                        <a href="BorrowRecordsServlet" class="btn btn-secondary">Back to List</a>
                     </div>
                 </div>
                 <% } else { %>
@@ -123,7 +145,7 @@
 
         <!-- GoToTop -->
         <div id="page-top" style="">
-            <a href="#header"><img src="<%= pageContext.getRequest().getContextPath()%>/images/common/returan-top.png" /></a>
+            <a href="#header"><img src="<%= request.getContextPath()%>/images/common/returan-top.png" /></a>
         </div>
         <!-- /GoToTop -->
 

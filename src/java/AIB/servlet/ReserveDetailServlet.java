@@ -4,7 +4,7 @@
  */
 package AIB.servlet;
 
-import AIB.Bean.ReserveRecordBean;
+import AIB.DL.ReserveRecord;
 import AIB.db.ITP4511_DB;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -23,7 +23,7 @@ import java.util.Map;
 @WebServlet(name = "ReserveDetailServlet", urlPatterns = {"/ReserveDetailServlet","/Shop/ReserveDetail"})
 public class ReserveDetailServlet extends HttpServlet {
 
-    private ReserveRecordBean recordBean;
+    private ReserveRecord recordBean;
 
     @Override
     public void init() throws ServletException {
@@ -33,7 +33,7 @@ public class ReserveDetailServlet extends HttpServlet {
                 getServletContext().getInitParameter("dbUser"),
                 getServletContext().getInitParameter("dbPassword")
         );
-        recordBean = new ReserveRecordBean(db);
+        recordBean = new ReserveRecord(db);
     }
 
     /**

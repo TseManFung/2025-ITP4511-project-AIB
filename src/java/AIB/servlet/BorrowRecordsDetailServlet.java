@@ -4,6 +4,7 @@
  */
 package AIB.servlet;
 
+import AIB.Bean.BorrowBean;
 import AIB.Bean.BorrowRecordsBean;
 import AIB.db.ITP4511_DB;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,7 +32,8 @@ public class BorrowRecordsDetailServlet extends HttpServlet {
                 getServletContext().getInitParameter("dbUrl"),
                 getServletContext().getInitParameter("dbUser"),
                 getServletContext().getInitParameter("dbPassword"));
-        recordsBean = new BorrowRecordsBean(db);
+        BorrowBean borrowBean = new BorrowBean(db);
+        recordsBean = new BorrowRecordsBean(db,borrowBean);
     }
 
     /**
@@ -74,7 +77,8 @@ public class BorrowRecordsDetailServlet extends HttpServlet {
         long recordId = Long.parseLong(request.getParameter("id"));
 
         try {
-            Map<String, Object> details = recordsBean.getRecordDetails(recordId);
+            List<Map<String, Object>> records = recordsBean.getBorrowRecords(recordId);
+            Map<String, Object> details = records.isEmpty() ? null : records.get(0);
             request.setAttribute("detail", details);
             request.getRequestDispatcher("/Shop/borrowRecordDetail.jsp").forward(request, response);
         } catch (Exception e) {

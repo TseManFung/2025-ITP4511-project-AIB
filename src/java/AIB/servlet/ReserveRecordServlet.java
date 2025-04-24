@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import AIB.Bean.ReserveRecordBean;
+import AIB.DL.ReserveRecord;
 import AIB.db.ITP4511_DB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "ReserveRecordServlet", urlPatterns = {"/ReserveRecordServlet", "/Shop/ReserveRecord"})
 public class ReserveRecordServlet extends HttpServlet {
 
-    private ReserveRecordBean recordBean;
+    private ReserveRecord recordBean;
 
     @Override
     public void init() throws ServletException {
@@ -35,7 +35,7 @@ public class ReserveRecordServlet extends HttpServlet {
                 getServletContext().getInitParameter("dbUrl"),
                 getServletContext().getInitParameter("dbUser"),
                 getServletContext().getInitParameter("dbPassword"));
-        recordBean = new ReserveRecordBean(db);
+        recordBean = new ReserveRecord(db);
     }
 
     /**
