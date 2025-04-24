@@ -2,6 +2,7 @@ package AIB.Bean;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 public class ReserveBean implements Serializable {
     private Long id;
@@ -11,6 +12,20 @@ public class ReserveBean implements Serializable {
     private String state; // C, A, R, F
     private Long fruitId;
     private Integer num;
+    private ArrayList<FruitBean> fruits = new ArrayList<>();
+    private int itemCount;
+
+    public int getItemCount() {
+        return this.itemCount;
+    }
+
+    public void setItemCount(int itemCount) {
+        this.itemCount = itemCount;
+    }
+
+    public ArrayList<FruitBean> getFruits() {
+        return this.fruits;
+    }
 
     // Default constructor
     public ReserveBean() {

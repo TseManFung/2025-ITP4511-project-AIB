@@ -4,6 +4,7 @@
  */
 package AIB.servlet;
 
+import AIB.Bean.ReserveBean;
 import AIB.DL.ReserveRecord;
 import AIB.db.ITP4511_DB;
 import java.io.IOException;
@@ -76,7 +77,7 @@ public class ReserveDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             long reserveId = Long.parseLong(request.getParameter("id"));
-            Map<String, Object> details = recordBean.getReserveDetails(reserveId);
+            ReserveBean details = recordBean.getReserveDetails(reserveId);
             request.setAttribute("details", details);
             request.getRequestDispatcher("/Shop/reserveDetail.jsp").forward(request, response);
         } catch (SQLException e) {

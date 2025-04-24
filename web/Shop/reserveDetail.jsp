@@ -6,17 +6,18 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
-<%@ page import="java.util.Map" %>
-<%@ page import="java.util.List" %>
 <%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="AIB.Bean.ReserveBean" %>
+<%@ page import="AIB.Bean.FruitBean" %>
 <%!
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 %>
+
 <!DOCTYPE html>
 <html>
     <head>
         <jsp:include page="/component/head.jsp" />
-        <title>Reservation detail</title>
+        <title>Reservation Detail</title>
         <style>
             .state-badge {
                 padding: 0.25em 0.4em;
@@ -52,12 +53,9 @@
         <!-- content -->
         <div class="d-flex position-relative content-bg justify-content-center">
             <div class="container">
-                <%
-                    Map<String, Object> details = (Map<String, Object>) request.getAttribute("details");
-                    Long id = details != null ? (Long) details.get("id") : null;
-                    String state = details != null ? (String) details.get("state") : null;
-                %>
-                <h2 class="mb-4">Reservation Details #<%= id != null ? id : "" %></h2>
+                <%-- 使用 <jsp:useBean> 來處理 ReserveBean 資料 --%>
+                <jsp:useBean id="details" type="AIB.Bean.ReserveBean" scope="request" />
+                <h2 class="mb-4">Reservation Details #<%= details.getId() != null ? details.getId() : "" %></h2>
 
                 <div class="card mb-4">
                     <div class="card-header">Basic Info</div>
@@ -65,20 +63,20 @@
                         <dl class="row">
                             <dt class="col-sm-3">Create Time:</dt>
                             <dd class="col-sm-9">
-                                <%= details != null && details.get("DT") != null ? dateFormat.format(details.get("DT")) : "" %>
+                                <%= details.getDT() != null ? dateFormat.format(details.getDT()) : "" %>
                             </dd>
                             
                             <dt class="col-sm-3">Reserve Time:</dt>
                             <dd class="col-sm-9">
-                                <%= details != null && details.get("reserveDT") != null ? dateFormat.format(details.get("reserveDT")) : "" %>
+                                <%= details.getReserveDT() != null ? dateFormat.format(details.getReserveDT()) : "" %>
                             </dd>
                             <dt class="col-sm-3">Status:</dt>
                             <dd class="col-sm-9">
-                                <span class="state-badge state-<%= state != null ? state : "" %>">
+                                <span class="state-badge state-<%= details.getState() != null ? details.getState() : "" %>">
                                     <%
                                         String stateText = "Unknown";
-                                        if (state != null) {
-                                            switch (state) {
+                                        if (details.getState() != null) {
+                                            switch (details.getState()) {
                                                 case "C":
                                                     stateText = "Created";
                                                     break;
@@ -97,10 +95,7 @@
                                             }
                                         }
                                     %>
-                                    <span class="state-badge state-<%= record.get("state") %> text-white">
-                                        <%= stateText %>
-                                    </span>
-                                    
+                                    <%= stateText %>
                                 </span>
                             </dd>
                         </dl>
@@ -115,22 +110,28 @@
                                 <tr>
                                     <th>Fruit Name</th>
                                     <th>Quantity</th>
+                                    <th>Unit</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                <%-- 使用 ReserveBean 的 fruits 屬性來顯示水果列表 --%>
                                 <%
-                                    if (details != null) {
-                                        List<Map<String, Object>> items = (List<Map<String, Object>>) details.get("items");
-                                        if (items != null) {
-                                            for (Map<String, Object> item : items) {
+                                    if (details.getFruits() != null && !details.getFruits().isEmpty()) {
+                                        for (FruitBean fruit : details.getFruits()) {
                                 %>
                                 <tr>
-                                    <td><%= item.get("fruitName") %></td>
-                                    <td><%= item.get("quantity") %></td>
+                                    <td><%= fruit.getName() %></td>
+                                    <td><%= fruit.getQuantity() %></td>
+                                    <td><%= fruit.getUnit() %></td>
                                 </tr>
                                 <%
-                                            }
                                         }
+                                    } else {
+                                %>
+                                <tr>
+                                    <td colspan="3" class="text-center">No items found</td>
+                                </tr>
+                                <%
                                     }
                                 %>
                             </tbody>
@@ -140,12 +141,11 @@
 
                 <a href="ReserveRecordServlet" class="btn btn-secondary mt-3">Back to List</a>
             
-                <% if ("A".equals(state)) { %>
-                        <form method="post" action="ReserveRecordServlet" style="display:inline">
-                            <input type="hidden" name="reserveId" value="<%= id %>">
-                            <button type="submit" class="btn btn-success" onclick="return confirm('Mark as completed?')">Complete</button>
-                        </form>
-                    
+                <% if ("A".equals(details.getState())) { %>
+                <form method="post" action="ReserveRecordServlet" style="display:inline">
+                    <input type="hidden" name="reserveId" value="<%= details.getId() %>">
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Mark as completed?')">Complete</button>
+                </form>
                 <% } %>
             </div> 
         </div>

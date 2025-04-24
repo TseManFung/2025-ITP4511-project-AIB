@@ -16,6 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import AIB.Bean.FruitBean;
+import AIB.Bean.ReserveBean;
 import AIB.db.ITP4511_DB;
 
 /**
@@ -30,20 +32,20 @@ public class ReserveRecord implements Serializable {
         this.db = db;
     }
 
-    public List<Map<String, Object>> getReserveRecords(long shopId, String filterState, String sortBy) throws SQLException {
-        List<Map<String, Object>> records = new ArrayList<>();
+    public List<ReserveBean> getReserveRecords(long shopId, String filterState, String sortBy) throws SQLException {
+        List<ReserveBean> reserveRecords = new ArrayList<>();
         String sql = "SELECT r.id, r.DT, r.reserveDT, r.state, COUNT(rd.fruitid) as itemCount "
-                + "FROM reserve r "
-                + "JOIN reserveDetail rd ON r.id = rd.reserveid "
-                + "WHERE r.Shopid = ? ";
-
+                   + "FROM reserve r "
+                   + "JOIN reserveDetail rd ON r.id = rd.reserveid "
+                   + "WHERE r.Shopid = ? ";
+    
         if (filterState != null && !filterState.isEmpty()) {
             sql += "AND r.state = ? ";
-        }else {
+        } else {
             sql += "AND r.state != 'F' ";
         }
         sql += "GROUP BY r.id ";
-
+    
         if (sortBy != null) {
             switch (sortBy) {
                 case "date":
@@ -57,26 +59,27 @@ public class ReserveRecord implements Serializable {
                     break;
             }
         }
-
+    
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             int paramIndex = 1;
             stmt.setLong(paramIndex++, shopId);
             if (filterState != null && !filterState.isEmpty()) {
                 stmt.setString(paramIndex, filterState);
             }
-
+    
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Map<String, Object> record = new LinkedHashMap<>();
-                record.put("id", rs.getLong("id"));
-                record.put("DT", rs.getTimestamp("DT"));
-                record.put("reserveDT", rs.getTimestamp("reserveDT"));
-                record.put("state", rs.getString("state"));
-                record.put("itemCount", rs.getInt("itemCount"));
-                records.add(record);
+                ReserveBean reserveBean = new ReserveBean();
+                reserveBean.setId(rs.getLong("id"));
+                reserveBean.setDT(rs.getTimestamp("DT"));
+                reserveBean.setReserveDT(rs.getTimestamp("reserveDT"));
+                reserveBean.setState(rs.getString("state"));
+                reserveBean.setItemCount(rs.getInt("itemCount"));
+    
+                reserveRecords.add(reserveBean);
             }
         }
-        return records;
+        return reserveRecords;
     }
 
     public boolean completeReservation(long reserveId,long shopId) throws SQLException {
@@ -134,33 +137,35 @@ public class ReserveRecord implements Serializable {
         }
     }
 
-    public Map<String, Object> getReserveDetails(long reserveId) throws SQLException {
-        Map<String, Object> details = new LinkedHashMap<>();
-        String sql = "SELECT r.*, rd.fruitid, f.name, rd.num "
-                + "FROM reserve r "
-                + "JOIN reserveDetail rd ON r.id = rd.reserveid "
-                + "JOIN fruit f ON rd.fruitid = f.id "
-                + "WHERE r.id = ?";
-        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, reserveId);
-            ResultSet rs = stmt.executeQuery();
+    public ReserveBean getReserveDetails(long reserveId) throws SQLException {
+    ReserveBean reserveDetails = new ReserveBean();
+    String sql = "SELECT r.id, r.DT, r.reserveDT, r.state, r.Shopid, rd.fruitid, rd.num, f.name, f.unit "
+               + "FROM reserve r "
+               + "JOIN reserveDetail rd ON r.id = rd.reserveid "
+               + "JOIN fruit f ON rd.fruitid = f.id "
+               + "WHERE r.id = ?";
+    try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setLong(1, reserveId);
+        ResultSet rs = stmt.executeQuery();
 
-            List<Map<String, Object>> items = new ArrayList<>();
-            while (rs.next()) {
-                if (details.isEmpty()) {
-                    details.put("id", rs.getLong("id"));
-                    details.put("DT", rs.getTimestamp("DT"));
-                    details.put("reserveDT", rs.getTimestamp("reserveDT"));
-                    details.put("state", rs.getString("state"));
-                }
-                Map<String, Object> item = new HashMap<>();
-                item.put("fruitId", rs.getLong("fruitid"));
-                item.put("fruitName", rs.getString("name"));
-                item.put("quantity", rs.getInt("num"));
-                items.add(item);
+        while (rs.next()) {
+            if(reserveDetails.getId() == null) {
+                reserveDetails.setId(rs.getLong("id"));
+                reserveDetails.setDT(rs.getTimestamp("DT"));
+                reserveDetails.setReserveDT(rs.getTimestamp("reserveDT"));
+                reserveDetails.setState(rs.getString("state"));
+                reserveDetails.setShopId(rs.getLong("Shopid"));
             }
-            details.put("items", items);
+
+            FruitBean fruit = new FruitBean();
+            fruit.setId(rs.getLong("fruitid"));
+            fruit.setName(rs.getString("name"));
+            fruit.setUnit(rs.getString("unit"));
+            fruit.setQuantity(rs.getInt("num"));
+
+            reserveDetails.getFruits().add(fruit);
         }
-        return details;
     }
+    return reserveDetails;
+}
 }

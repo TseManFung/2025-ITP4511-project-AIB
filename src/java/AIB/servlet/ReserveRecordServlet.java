@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import AIB.Bean.ReserveBean;
 import AIB.DL.ReserveRecord;
 import AIB.db.ITP4511_DB;
 import jakarta.servlet.ServletException;
@@ -88,7 +89,7 @@ public class ReserveRecordServlet extends HttpServlet {
             String filter = request.getParameter("filter");
             String sort = request.getParameter("sort");
 
-            List<Map<String, Object>> records = recordBean.getReserveRecords(shopId, filter, sort);
+            List<ReserveBean> records = recordBean.getReserveRecords(shopId, filter, sort);
             request.setAttribute("records", records);
             request.getRequestDispatcher("/Shop/reserveRecords.jsp").forward(request, response);
         } catch (SQLException e) {
