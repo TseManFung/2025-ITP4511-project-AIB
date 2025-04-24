@@ -17,8 +17,6 @@
     <head>
         <jsp:include page="/component/head.jsp" />
         <title>Reservation detail</title>
-
-
     </head>
     <body>
         <jsp:include page="/component/modal.jsp" />
@@ -32,7 +30,12 @@
         <!-- content -->
         <div class="d-flex position-relative content-bg justify-content-center">
             <div class="container">
-                <h2 class="mb-4">Reservation Details #<%= request.getAttribute("details") != null ? ((Map) request.getAttribute("details")).get("id") : ""%></h2>
+                <%
+                    Map<String, Object> details = (Map<String, Object>) request.getAttribute("details");
+                    Long id = details != null ? (Long) details.get("id") : null;
+                    String state = details != null ? (String) details.get("state") : null;
+                %>
+                <h2 class="mb-4">Reservation Details #<%= id != null ? id : "" %></h2>
 
                 <div class="card mb-4">
                     <div class="card-header">Basic Info</div>
@@ -40,20 +43,19 @@
                         <dl class="row">
                             <dt class="col-sm-3">Create Time:</dt>
                             <dd class="col-sm-9">
-                                <%= request.getAttribute("details") != null ? dateFormat.format(((Map) request.getAttribute("details")).get("DT")) : "" %>
+                                <%= details != null && details.get("DT") != null ? dateFormat.format(details.get("DT")) : "" %>
                             </dd>
                             
                             <dt class="col-sm-3">Reserve Time:</dt>
                             <dd class="col-sm-9">
-                                <%= request.getAttribute("details") != null ? dateFormat.format(((Map) request.getAttribute("details")).get("reserveDT")) : "" %>
+                                <%= details != null && details.get("reserveDT") != null ? dateFormat.format(details.get("reserveDT")) : "" %>
                             </dd>
                             <dt class="col-sm-3">Status:</dt>
                             <dd class="col-sm-9">
-                                <span class="state-badge state-<%= request.getAttribute("details") != null ? ((Map) request.getAttribute("details")).get("state") : ""%>">
+                                <span class="state-badge state-<%= state != null ? state : "" %>">
                                     <%
                                         String stateText = "Unknown";
-                                        if (request.getAttribute("details") != null) {
-                                            String state = (String) ((Map) request.getAttribute("details")).get("state");
+                                        if (state != null) {
                                             switch (state) {
                                                 case "C":
                                                     stateText = "Created";
@@ -92,15 +94,17 @@
                             </thead>
                             <tbody>
                                 <%
-                                    if (request.getAttribute("details") != null) {
-                                        List<Map<String, Object>> items = (List<Map<String, Object>>) ((Map) request.getAttribute("details")).get("items");
-                                        for (Map<String, Object> item : items) {
+                                    if (details != null) {
+                                        List<Map<String, Object>> items = (List<Map<String, Object>>) details.get("items");
+                                        if (items != null) {
+                                            for (Map<String, Object> item : items) {
                                 %>
                                 <tr>
-                                    <td><%= item.get("fruitName")%></td>
-                                    <td><%= item.get("quantity")%></td>
+                                    <td><%= item.get("fruitName") %></td>
+                                    <td><%= item.get("quantity") %></td>
                                 </tr>
                                 <%
+                                            }
                                         }
                                     }
                                 %>
@@ -110,6 +114,14 @@
                 </div>
 
                 <a href="ReserveRecordServlet" class="btn btn-secondary mt-3">Back to List</a>
+            
+                <% if ("A".equals(state)) { %>
+                        <form method="post" action="ReserveRecordServlet" style="display:inline">
+                            <input type="hidden" name="reserveId" value="<%= id %>">
+                            <button type="submit" class="btn btn-success" onclick="return confirm('Mark as completed?')">Complete</button>
+                        </form>
+                    
+                <% } %>
             </div> 
         </div>
         <!-- /content -->

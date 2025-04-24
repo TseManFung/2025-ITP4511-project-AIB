@@ -76,7 +76,7 @@
                                                                             Status:</label>
                                                                         <select name="filter" class="form-select"
                                                                                 onchange="this.form.submit()">
-                                                                            <option value="">All</option>
+                                                                            <option value="">Default</option>
                                                                             <option value="C" <%="C"
                                                                                     .equals(request.getParameter("filter"))
                                                                                     ? "selected" : "" %>>Created
