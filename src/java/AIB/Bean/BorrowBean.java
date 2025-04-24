@@ -1,125 +1,136 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Beans/Bean.java to edit this template
+ */
 package AIB.Bean;
 
-import AIB.db.ITP4511_DB;
-import AIB.algorithm.SnowflakeSingleton;
-
+import java.beans.*;
 import java.io.Serializable;
-import java.sql.*;
+import java.sql.Timestamp;
+/**
+ *
+ * @author andyt
+ */
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class BorrowBean implements Serializable {
 
-    private final ITP4511_DB db;
+    /*
+     * SELECT
+     * b.id AS borrowId,
+     * b.DT AS borrowDate,
+     * b.state AS borrowState,
+     * sourceShop.id AS sourceShopId,
+     * sourceShop.name AS sourceShopName,
+     * destinationShop.id AS destinationShopId,
+     * destinationShop.name AS destinationShopName,
+     * f.id AS fruitId,
+     * f.name AS fruitName,
+     * f.unit AS fruitUnit,
+     * bd.num AS fruitQuantity
+     * FROM
+     * borrow b
+     * INNER JOIN shop sourceShop ON b.sourceShopid = sourceShop.id
+     * INNER JOIN shop destinationShop ON b.destinationShopid = destinationShop.id
+     * INNER JOIN borrowDetail bd ON b.id = bd.borrowid
+     * INNER JOIN fruit f ON bd.fruitid = f.id;
+     */
 
-    public BorrowBean(ITP4511_DB db) {
-        this.db = db;
+    private Long borrowId;
+    private Timestamp borrowDate;
+    private String borrowState;
+    private Long sourceShopId;//出貨商店ID
+    private String sourceShopName;
+    private Long destinationShopId;//借貨商店ID
+    private String destinationShopName;
+    private ArrayList<FruitBean> fruits = new ArrayList<>();
+    private int itemCount = 0;
+
+    public int getItemCount() {
+        return this.itemCount;
     }
 
-    // Get shops and their fruit stocks in the same city
-    public List<ShopBean> getCityShopsStock(long currentShopId, long cityId) throws SQLException {
-        List<ShopBean> shopList = new ArrayList<>();
-        String sql = "SELECT shop.id AS shopId, shop.name AS shopName, city.id AS cityId, city.name AS cityName, " +
-                     "country.id AS countryId, country.name AS countryName, shopStock.fruitid AS fruitId, " +
-                     "fruit.name AS fruitName, fruit.unit AS fruitUnit, shopStock.num AS stockQuantity " +
-                     "FROM shop " +
-                     "INNER JOIN city ON shop.cityid = city.id " +
-                     "INNER JOIN country ON city.countryid = country.id " +
-                     "INNER JOIN shopStock ON shop.id = shopStock.shopid " +
-                     "INNER JOIN fruit ON shopStock.fruitid = fruit.id " +
-                     "WHERE shop.cityid = ? AND shop.id != ? " +
-                     "ORDER BY shop.id";
+    public void setItemCount(int itemCount) {
+        this.itemCount = itemCount;
+    }
+    // Item count for the borrow record
 
-        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, cityId);
-            stmt.setLong(2, currentShopId);
-            ResultSet rs = stmt.executeQuery();
-
-            Long currentShopIdInLoop = null;
-            ShopBean currentShop = null;
-
-            while (rs.next()) {
-                Long shopId = rs.getLong("shopId");
-
-                if (!shopId.equals(currentShopIdInLoop)) {
-                    if (currentShop != null) {
-                        shopList.add(currentShop);
-                    }
-                    currentShopIdInLoop = shopId;
-                    currentShop = new ShopBean(shopId, rs.getString("shopName"),
-                            rs.getLong("cityId"), rs.getString("cityName"),
-                            rs.getLong("countryId"), rs.getString("countryName"));
-                }
-
-                if (currentShop != null) {
-                    FruitBean fruit = new FruitBean();
-                    fruit.setId(rs.getLong("fruitId"));
-                    fruit.setName(rs.getString("fruitName"));
-                    fruit.setUnit(rs.getString("fruitUnit"));
-                    fruit.setQuantity(rs.getInt("stockQuantity"));
-                    currentShop.getFruits().add(fruit);
-                }
-            }
-
-            if (currentShop != null) {
-                shopList.add(currentShop);
-            }
-        }
-
-        return shopList;
+    public Long getBorrowId() {
+        return this.borrowId;
     }
 
-    // Create a borrow request
-    public long createBorrowRequest(long sourceShopId, long destShopId, Map<Long, Integer> items) throws SQLException {
-        Connection conn = null;
-        try {
-            conn = db.getConnection();
-            conn.setAutoCommit(false);
-
-            long borrowId = SnowflakeSingleton.getInstance().nextId();
-
-            String borrowSql = "INSERT INTO borrow (id, sourceShopid, destinationShopid, state) VALUES (?, ?, ?, 'C')";
-            try (PreparedStatement stmt = conn.prepareStatement(borrowSql)) {
-                stmt.setLong(1, borrowId);
-                stmt.setLong(3, sourceShopId);
-                stmt.setLong(2, destShopId);
-                stmt.executeUpdate();
-            }
-
-            String detailSql = "INSERT INTO borrowDetail (borrowid, fruitid, num) VALUES (?, ?, ?)";
-            try (PreparedStatement stmt = conn.prepareStatement(detailSql)) {
-                for (Map.Entry<Long, Integer> entry : items.entrySet()) {
-                    stmt.setLong(1, borrowId);
-                    stmt.setLong(2, entry.getKey());
-                    stmt.setInt(3, entry.getValue());
-                    stmt.addBatch();
-                }
-                stmt.executeBatch();
-            }
-
-            conn.commit();
-            return borrowId;
-        } catch (SQLException e) {
-            if (conn != null) {
-                conn.rollback();
-            }
-            throw e;
-        } finally {
-            if (conn != null) {
-                conn.close();
-            }
-        }
+    public void setBorrowId(Long borrowId) {
+        this.borrowId = borrowId;
     }
 
-    // Update fruit stock for both shops
-    public void updateFruitStock(long shopId, long fruitId, int quantityChange) throws SQLException {
-        String sql = "UPDATE shopStock SET num = num + ? WHERE shopid = ? AND fruitid = ?";
-        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, quantityChange);
-            stmt.setLong(2, shopId);
-            stmt.setLong(3, fruitId);
-            stmt.executeUpdate();
-        }
+    public Timestamp getBorrowDate() {
+        return this.borrowDate;
+    }
+
+    public void setBorrowDate(Timestamp borrowDate) {
+        this.borrowDate = borrowDate;
+    }
+
+    public String getBorrowState() {
+        return this.borrowState;
+    }
+
+    public void setBorrowState(String borrowState) {
+        this.borrowState = borrowState;
+    }
+
+    public Long getSourceShopId() {
+        return this.sourceShopId;
+    }
+
+    public void setSourceShopId(Long sourceShopId) {
+        this.sourceShopId = sourceShopId;
+    }
+
+    public String getSourceShopName() {
+        return this.sourceShopName;
+    }
+
+    public void setSourceShopName(String sourceShopName) {
+        this.sourceShopName = sourceShopName;
+    }
+
+    public Long getDestinationShopId() {
+        return this.destinationShopId;
+    }
+
+    public void setDestinationShopId(Long destinationShopId) {
+        this.destinationShopId = destinationShopId;
+    }
+
+    public String getDestinationShopName() {
+        return this.destinationShopName;
+    }
+
+    public void setDestinationShopName(String destinationShopName) {
+        this.destinationShopName = destinationShopName;
+    }
+
+    public ArrayList<FruitBean> getFruits() {
+        return this.fruits;
+    }
+
+    public void setFruits(ArrayList<FruitBean> fruits) {
+        this.fruits = fruits;
+    }
+
+    public BorrowBean() {
+    }
+
+    public BorrowBean(Long borrowId, Timestamp borrowDate, String borrowState, Long sourceShopId, String sourceShopName,
+            Long destinationShopId, String destinationShopName) {
+        this.borrowId = borrowId;
+        this.borrowDate = borrowDate;
+        this.borrowState = borrowState;
+        this.sourceShopId = sourceShopId;
+        this.sourceShopName = sourceShopName;
+        this.destinationShopId = destinationShopId;
+        this.destinationShopName = destinationShopName;
+
     }
 }

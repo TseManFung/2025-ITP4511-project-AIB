@@ -4,8 +4,8 @@
  */
 package AIB.servlet;
 
-import AIB.Bean.BorrowBean;
-import AIB.Bean.BorrowRecordsBean;
+import AIB.BorrowBean;
+import AIB.BorrowRecordsBean;
 import AIB.db.ITP4511_DB;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author andyt
  */
-@WebServlet(name = "BorrowRecordsServlet", urlPatterns = {"/BorrowRecordsServlet", "/Shop/BorrowRecords"})
+@WebServlet(name = "BorrowRecordsServlet", urlPatterns = {"/BorrowRecordServlet", "/Shop/BorrowRecords"})
 public class BorrowRecordsServlet extends HttpServlet {
 
     private BorrowRecordsBean recordsBean;
@@ -113,9 +113,9 @@ public class BorrowRecordsServlet extends HttpServlet {
                     recordsBean.updateRecordState(recordId, "F", shopId);
                     break;
             }
-            response.sendRedirect("BorrowRecords");
+            response.sendRedirect("BorrowRecordServlet");
         } catch (Exception e) {
-            response.sendRedirect("borrowRecords.jsp?error=1");
+            response.sendRedirect("BorrowRecordServlet.jsp?error=1");
         }
     }
 

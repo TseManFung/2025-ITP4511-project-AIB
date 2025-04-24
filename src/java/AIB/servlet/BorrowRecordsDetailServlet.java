@@ -4,8 +4,8 @@
  */
 package AIB.servlet;
 
-import AIB.Bean.BorrowBean;
-import AIB.Bean.BorrowRecordsBean;
+import AIB.BorrowBean;
+import AIB.BorrowRecordsBean;
 import AIB.db.ITP4511_DB;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -21,7 +21,7 @@ import java.util.Map;
  *
  * @author andyt
  */
-@WebServlet(name = "BorrowRecordsDetailServlet", urlPatterns = {"/BorrowRecordsDetailServlet", "/Shop/BorrowRecordsDetail"})
+@WebServlet(name = "BorrowRecordsDetailServlet", urlPatterns = {"/BorrowRecordDetailServlet", "/Shop/BorrowRecordsDetail"})
 public class BorrowRecordsDetailServlet extends HttpServlet {
 
     private BorrowRecordsBean recordsBean;

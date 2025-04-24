@@ -11,7 +11,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import AIB.Bean.BorrowBean;
+import AIB.BorrowBean;
 import AIB.Bean.ShopBean;
 import AIB.db.ITP4511_DB;
 import jakarta.servlet.ServletException;
