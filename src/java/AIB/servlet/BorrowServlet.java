@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author andyt
  */
-@WebServlet(name = "BorrowServlet", urlPatterns = {"/BorrowServlet", "/Shop/Borrow"})
+@WebServlet(name = "BorrowServlet", urlPatterns = { "/BorrowServlet", "/Shop/Borrow" })
 public class BorrowServlet extends HttpServlet {
 
     private BorrowBean borrowBean;
@@ -45,10 +45,10 @@ public class BorrowServlet extends HttpServlet {
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -72,10 +72,10 @@ public class BorrowServlet extends HttpServlet {
     /**
      * Handles the HTTP <code>GET</code> method.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -101,10 +101,10 @@ public class BorrowServlet extends HttpServlet {
     /**
      * Handles the HTTP <code>POST</code> method.
      *
-     * @param request servlet request
+     * @param request  servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException      if an I/O error occurs
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -112,22 +112,22 @@ public class BorrowServlet extends HttpServlet {
         HttpSession session = request.getSession();
         Long sourceShopId = (Long) session.getAttribute("shopId");
         Long destShopId = Long.parseLong(request.getParameter("destShopId"));
-     
-Map<Long, Integer> items = new HashMap<>();
-Enumeration<String> params = request.getParameterNames();
-while (params.hasMoreElements()) {
-    String param = params.nextElement();
-    if (param.startsWith("fruit_")) {
-        Long fruitId = Long.parseLong(param.substring(6));
-        int qty = Integer.parseInt(request.getParameter(param));
-        items.put(fruitId, qty);
-    }
-}
+
+        Map<Long, Integer> items = new HashMap<>();
+        Enumeration<String> params = request.getParameterNames();
+        while (params.hasMoreElements()) {
+            String param = params.nextElement();
+            if (param.startsWith("fruit_")) {
+                Long fruitId = Long.parseLong(param.substring(6));
+                int qty = Integer.parseInt(request.getParameter(param));
+                items.put(fruitId, qty);
+            }
+        }
 
         try {
             if (!items.isEmpty()) {
                 long recordId = borrowBean.createBorrowRequest(sourceShopId, destShopId, items);
-                response.sendRedirect("BorrowServlet?success="+recordId);
+                response.sendRedirect("BorrowServlet?success=" + recordId);
             } else {
                 response.sendRedirect("borrow.jsp?error=1");
             }

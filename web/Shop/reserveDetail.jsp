@@ -17,6 +17,28 @@
     <head>
         <jsp:include page="/component/head.jsp" />
         <title>Reservation detail</title>
+        <style>
+            .state-badge {
+                padding: 0.25em 0.4em;
+                border-radius: 0.25rem;
+            }
+
+            .state-C {
+                background-color: blue;
+            }
+
+            .state-A {
+                background-color: greenyellow;
+            }
+
+            .state-R {
+                background-color: #dc3545;
+            }
+
+            .state-F {
+                background-color: grey;
+            }
+        </style>
     </head>
     <body>
         <jsp:include page="/component/modal.jsp" />
@@ -75,7 +97,10 @@
                                             }
                                         }
                                     %>
-                                    <%= stateText %>
+                                    <span class="state-badge state-<%= record.get("state") %> text-white">
+                                        <%= stateText %>
+                                    </span>
+                                    
                                 </span>
                             </dd>
                         </dl>

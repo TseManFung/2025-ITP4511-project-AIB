@@ -33,7 +33,7 @@ public class NavbarTag extends SimpleTagSupport {
                 put("Reserve form Warehouse", "/ReserveServlet");
                 put("Reservtion Record", "/ReserveRecordServlet");
                 put("Borrow form Other Shop", "/BorrowServlet");
-                put("Borrow Record", "/BorrowRecordsServlet");
+                put("Borrow Record", "/BorrowRecordServlet");
                 put("Stock Update", "/StockUpdateServlet");
             }
         };

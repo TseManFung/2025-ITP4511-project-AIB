@@ -11,9 +11,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+import AIB.Bean.FruitBean;
 import AIB.algorithm.SnowflakeSingleton;
 import AIB.db.ITP4511_DB;
 
@@ -29,9 +32,9 @@ public class Reservation implements Serializable {
         this.db = db;
     }
 
-    public Map<String, Integer> getAvailableFruits() throws SQLException {
-        Map<String, Integer> fruits = new LinkedHashMap<>();
-        String sql = "SELECT f.id, f.name, (SUM(ws.num) - COALESCE(SUM(rd.num), 0)) as available "
+    public List<FruitBean> getAvailableFruits() throws SQLException {
+        List<FruitBean> fruits = new ArrayList<>();
+        String sql = "SELECT f.id, f.name, (SUM(ws.num) - COALESCE(SUM(rd.num), 0)) as available ,unit "
                 + "FROM fruit f "
                 + "JOIN warehouseStock ws ON f.id = ws.fruitid "
                 + "JOIN warehouse w ON ws.warehouseid = w.id "
@@ -41,9 +44,12 @@ public class Reservation implements Serializable {
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                String fruitName = rs.getString("name");
-                int available = rs.getInt("available");
-                fruits.put(fruitName + "|" + rs.getLong("id"), available);
+                FruitBean fruit = new FruitBean();
+                fruit.setId(rs.getLong("id"));
+                fruit.setName(rs.getString("name"));
+                fruit.setQuantity(rs.getInt("available"));
+                fruit.setUnit(rs.getString("unit"));
+                fruits.add(fruit);
             }
         }
         return fruits;
@@ -54,9 +60,9 @@ public class Reservation implements Serializable {
         try {
             conn = db.getConnection();
             conn.setAutoCommit(false);
-    
+
             long reserveId = SnowflakeSingleton.getInstance().nextId();
-    
+
             // Create reserve record
             String reserveSql = "INSERT INTO reserve (id, Shopid, reserveDT, state) VALUES (?, ?, ?, 'C')";
             try (PreparedStatement stmt = conn.prepareStatement(reserveSql)) {
@@ -65,7 +71,7 @@ public class Reservation implements Serializable {
                 stmt.setTimestamp(3, Timestamp.valueOf(reserveDT + " 00:00:00")); // 將日期轉換為 Timestamp
                 stmt.executeUpdate();
             }
-    
+
             // Add reserve details
             String detailSql = "INSERT INTO reserveDetail (reserveid, fruitid, num) VALUES (?, ?, ?)";
             try (PreparedStatement stmt = conn.prepareStatement(detailSql)) {
@@ -77,7 +83,7 @@ public class Reservation implements Serializable {
                 }
                 stmt.executeBatch();
             }
-    
+
             conn.commit();
             return reserveId;
         } catch (SQLException e) {

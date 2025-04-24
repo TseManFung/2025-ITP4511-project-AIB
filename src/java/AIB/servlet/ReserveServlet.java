@@ -9,8 +9,10 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import AIB.Bean.FruitBean;
 import AIB.DL.Reservation;
 import AIB.db.ITP4511_DB;
 import jakarta.servlet.ServletException;
@@ -87,7 +89,7 @@ public class ReserveServlet extends HttpServlet {
                 return;
             }
 
-            Map<String, Integer> fruits = reservationBean.getAvailableFruits();
+            List<FruitBean> fruits = reservationBean.getAvailableFruits();
             request.setAttribute("fruits", fruits);
             request.getRequestDispatcher("/Shop/reserve.jsp").forward(request, response);
         } catch (SQLException e) {

@@ -6,6 +6,8 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
+<%@ page import="java.util.List" %>
+<%@ page import="AIB.Bean.FruitBean" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -26,42 +28,38 @@
             <div class="container">
                 <h2 class="mb-4">Fruit Reservation</h2>
 
-                <%-- 宣告區塊，定義方法 --%>
-                <%!
-                    public String getErrorMessage(int errorCode) {
-                        switch (errorCode) {
-                            case 1:
-                                return "Invalid reservation quantity";
-                            case 2:
-                                return "Database error occurred";
-                            default:
-                                return "Unknown error";
-                        }
-                    }
-                %>
-
                 <%-- 顯示錯誤訊息 --%>
                 <%
                     String errorMessage = null;
                     if (request.getParameter("error") != null) {
                         int errorCode = Integer.parseInt(request.getParameter("error"));
-                        errorMessage = getErrorMessage(errorCode);
+                        switch (errorCode) {
+                            case 1:
+                                errorMessage = "Invalid reservation quantity";
+                                break;
+                            case 2:
+                                errorMessage = "Database error occurred";
+                                break;
+                            default:
+                                errorMessage = "Unknown error";
+                        }
                     }
 
-                    if(request.getParameter("success") != null) {
-                        
+                    if (request.getParameter("success") != null) {
                 %>
                 <div class="alert alert-success">
-               Reservation successful! Your reservation ID is: <%= request.getParameter("success") %>
-            </div>
-               <%  } %>
+                    Reservation successful! Your reservation ID is: <%= request.getParameter("success") %>
+                </div>
+                <% } %>
                 
-                <% if (errorMessage != null) {%>
+                <% if (errorMessage != null) { %>
                 <div class="alert alert-danger">
-                    <%= errorMessage%>
+                    <%= errorMessage %>
                 </div>
                 <% } %>
 
+                <%-- 使用 jsp:useBean 來處理 FruitBean 資料 --%>
+                <jsp:useBean id="fruits" type="java.util.List<FruitBean>" scope="request" />
                 <form method="post">
                     <div class="mb-3">
                         <label for="reserveDT" class="form-label">Reservation Date</label>
@@ -75,41 +73,36 @@
                             <tr>
                                 <th>Fruit Name</th>
                                 <th>Available Quantity</th>
+                                <th>Unit</th>
                                 <th>Reserve Quantity</th>
                             </tr>
                         </thead>
                         <tbody>
                             <%
-                                java.util.Map<String, Integer> fruits = (java.util.Map<String, Integer>) request.getAttribute("fruits");
-                                if (fruits != null) {
-                                    for (java.util.Map.Entry<String, Integer> entry : fruits.entrySet()) {
-                                        String[] parts = entry.getKey().split("\\|");
-                                        String fruitName = parts[0];
-                                        String fruitId = parts[1];
-                                        int availableQuantity = entry.getValue();
+                                if (fruits != null && !fruits.isEmpty()) {
+                                    for (FruitBean fruit : fruits) {
                             %>
                             <tr>
-                                <td><%= fruitName%></td>
-                                <td><%= availableQuantity%></td>
+                                <td><%= fruit.getName() %></td>
+                                <td><%= fruit.getQuantity() %></td>
+                                <td><%= fruit.getUnit() %></td>
                                 <td>
-                                    <input type="number" name="fruit_<%= fruitId%>" value="0"
-                                           class="form-control" min="0" max="<%= availableQuantity%>"
+                                    <input type="number" name="fruit_<%= fruit.getId() %>" value="0"
+                                           class="form-control" min="0" max="<%= fruit.getQuantity() %>"
                                            required oninput="validateQuantity(this)">
                                 </td>
                             </tr>
-                            <%
-                                }
-                            } else {
+                            <% 
+                                    }
+                                } else { 
                             %>
                             <tr>
                                 <td colspan="3" class="text-center">No fruits available for reservation</td>
                             </tr>
-                            <% }%>
+                            <% } %>
                         </tbody>
                     </table>
                     <button type="submit" class="btn btn-primary" id="submitButton" onclick="hideButtonAndSubmit(this)">Submit Reservation</button>
-
-
                 </form>
             </div> 
         </div>
@@ -117,7 +110,7 @@
 
         <!-- GoToTop -->
         <div id="page-top" style="">
-            <a href="#header"><img src="<%= request.getContextPath()%>/images/common/returan-top.png" /></a>
+            <a href="#header"><img src="<%= request.getContextPath() %>/images/common/returan-top.png" /></a>
         </div>
         <!-- /GoToTop -->
 
