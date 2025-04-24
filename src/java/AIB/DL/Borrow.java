@@ -52,7 +52,7 @@ public class Borrow implements Serializable {
         "INNER JOIN shopStock ON shop.id = shopStock.shopid " +
         "INNER JOIN fruit ON shopStock.fruitid = fruit.id " +
         "LEFT JOIN borrow ON borrow.sourceShopid = shop.id AND borrow.state = 'C' " +
-        "LEFT JOIN borrowDetail bd ON shopStock.fruitid = bd.fruitid " +
+        "LEFT JOIN borrowDetail bd ON borrow.id = bd.borrowid and shopStock.fruitid = bd.fruitid " +
         "WHERE shop.cityid = ? AND shop.id != ? AND shop.id = ? " +
         "GROUP BY shopStock.fruitid " +
         "ORDER BY shop.id";

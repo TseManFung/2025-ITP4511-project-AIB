@@ -161,7 +161,10 @@ public class BorrowRecord implements Serializable {
                 for (FruitBean item : items) {
                     long fruitId = item.getId();
                     int num = item.getQuantity();
-                    updateFruitStock(conn, destShopId, fruitId, num);
+                    if (!updateFruitStock(conn, destShopId, fruitId, num)) {
+                        conn.rollback();
+                        return false; // 如果庫存不足，回滾
+                    }
                 }
             }
 
@@ -192,9 +195,6 @@ public class BorrowRecord implements Serializable {
                     // 如果更新後的數量小於 0，返回失敗
                     return false;
                 }
-            } else {
-                // 如果沒有找到對應的庫存記錄，返回失敗
-                return false;
             }
         }
 
