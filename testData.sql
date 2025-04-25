@@ -52,18 +52,20 @@ INSERT INTO fruit (id, sourceCountryid, name, unit) VALUES
 -- 用户数据（确保每个店铺和仓库有至少一名员工）
 INSERT INTO user (loginName, name, password, type, shopid, warehouseid) VALUES
 -- 店铺员工（每个店铺至少1人）
-('tokyo_shop1', 'Taro', SHA2('password', 256), 'B', 1001, NULL),
-('tokyo_shop2', 'Hanako', SHA2('password', 256), 'B', 1002, NULL),
-('osaka_shop1', 'Kenji', SHA2('password', 256), 'B', 2001, NULL),
-('ny_shop1', 'John', SHA2('password', 256), 'B', 3001, NULL),
-('hk_shop1', 'Amy', SHA2('password', 256), 'B', 4001, NULL),
+('tokyo_shop1', 'Taro', SHA2('123', 256), 'B', 1001, NULL),
+('tokyo_shop2', 'Hanako', SHA2('123', 256), 'B', 1002, NULL),
+('osaka_shop1', 'Kenji', SHA2('123', 256), 'B', 2001, NULL),
+('ny_shop1', 'John', SHA2('123', 256), 'B', 3001, NULL),
+('hk_shop1', 'Amy', SHA2('123', 256), 'B', 4001, NULL),
 -- 仓库员工（每个仓库至少1人）
-('jp_wh1', 'Yamada',SHA2('password', 256), 'W', NULL, 101),
-('jp_wh2', 'Suzuki', SHA2('password', 256), 'W', NULL, 102),
-('us_wh1', 'Smith',SHA2('password', 256), 'W', NULL, 201),
-('hk_wh1', 'Wong',SHA2('password', 256), 'W', NULL, 301),
+('jp_wh1', 'Yamada',SHA2('123', 256), 'W', NULL, 101),
+('jp_wh2', 'Suzuki', SHA2('123', 256), 'W', NULL, 102),
+('us_wh1', 'Smith',SHA2('123', 256), 'W', NULL, 201),
+('us_wh2', 'Smith',SHA2('123', 256), 'W', NULL, 202),
+('hk_wh1', 'Wong',SHA2('123', 256), 'W', NULL, 301),
+('hk_wh2', 'Wong',SHA2('123', 256), 'W', NULL, 302),
 -- 管理层
-('admin', 'Admin', SHA2('password', 256), 'S', NULL, NULL);
+('admin', 'Admin', SHA2('123', 256), 'S', NULL, NULL);
 
 -- 源仓库初始库存
 INSERT INTO warehouseStock (warehouseid, fruitid, num) VALUES
