@@ -34,13 +34,15 @@ public class Reservation implements Serializable {
 
     public List<FruitBean> getAvailableFruits() throws SQLException {
         List<FruitBean> fruits = new ArrayList<>();
-        String sql = "SELECT f.id, f.name, (SUM(ws.num) - COALESCE(SUM(rd.num), 0)) as available ,unit "
-                + "FROM fruit f "
-                + "JOIN warehouseStock ws ON f.id = ws.fruitid "
-                + "JOIN warehouse w ON ws.warehouseid = w.id "
-                + "LEFT JOIN reserveDetail rd ON f.id = rd.fruitid "
-                + "LEFT JOIN reserve r ON rd.reserveid = r.id AND r.state = 'C' "
-                + "GROUP BY f.id";
+        String sql = "SELECT f.id, f.name, (SUM(ws.num) - COALESCE(rd.num, 0)) as available, unit "
+            + "FROM fruit f "
+            + "INNER JOIN warehouse w ON (w.type = 'S' OR w.countryid = 1) "
+            + "INNER JOIN warehouseStock ws ON ws.warehouseid = w.id AND f.id = ws.fruitid "
+            + "LEFT JOIN (SELECT fruitid, SUM(num) as num FROM reserve r "
+            + "INNER JOIN reserveDetail rd ON rd.reserveid = r.id "
+            + "WHERE r.state = 'C' "
+            + "GROUP BY fruitid) rd ON f.id = rd.fruitid "
+            + "GROUP BY f.id";
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
