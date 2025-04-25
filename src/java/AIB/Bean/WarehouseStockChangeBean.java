@@ -12,6 +12,7 @@ public class WarehouseStockChangeBean implements Serializable {
     private String state; // C, A, R, F
     private Long fruitId;
     private Integer num;
+    private String detailState; // C, A, R, F for warehouseStockChangeDetail state
 
     // Default constructor
     public WarehouseStockChangeBean() {
@@ -82,6 +83,14 @@ public class WarehouseStockChangeBean implements Serializable {
         this.num = num;
     }
 
+    public String getDetailState() {
+        return detailState;
+    }
+
+    public void setDetailState(String detailState) {
+        this.detailState = detailState;
+    }
+
     @Override
     public String toString() {
         return "WarehouseStockChangeBean{" +
@@ -93,6 +102,7 @@ public class WarehouseStockChangeBean implements Serializable {
                ", state='" + state + '\'' +
                ", fruitId=" + fruitId +
                ", num=" + num +
+               ", detailState='" + detailState + '\'' +
                '}';
     }
 }

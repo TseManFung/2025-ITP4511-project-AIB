@@ -28,7 +28,7 @@
             <div class="container">
                 <h2 class="mb-4">Fruit Reservation</h2>
 
-                <%-- 顯示錯誤訊息 --%>
+            
                 <%
                     String errorMessage = null;
                     if (request.getParameter("error") != null) {
@@ -58,7 +58,7 @@
                 </div>
                 <% } %>
 
-                <%-- 使用 jsp:useBean 來處理 FruitBean 資料 --%>
+             
                 <jsp:useBean id="fruits" type="java.util.List<FruitBean>" scope="request" />
                 <form method="post">
                     <div class="mb-3">

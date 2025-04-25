@@ -25,29 +25,104 @@
             <div class="container mt-5">
                 <h1>Receive Stock</h1>
 
+                <form action="centralWarehouseReceiveServlet" method="POST">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
+                                <th>ID</th>
+                                <th>Start Time</th>
+                                <th>Source</th>
+                                <th>Fruit</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <%
+                                List<WarehouseStockChangeBean> pendingTransfers = (List<WarehouseStockChangeBean>) request.getAttribute("pendingTransfers");
+                                List<String> warehouses = (List<String>) request.getAttribute("warehouses");
+                                List<String> fruits = (List<String>) request.getAttribute("fruits");
+                                if (pendingTransfers != null) {
+                                    for (int i = 0; i < pendingTransfers.size(); i++) {
+                                        WarehouseStockChangeBean transfer = pendingTransfers.get(i);
+                            %>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="selectedItems" 
+                                               value="<%= transfer.getId() %>:<%= transfer.getFruitId() %>">
+                                    </td>
+                                    <td><%= transfer.getId() %></td>
+                                    <td><%= transfer.getDeliveryStartTime() %></td>
+                                    <td>
+                                        <%
+                                            if (warehouses != null) {
+                                                for (int j = 0; j < warehouses.size(); j++) {
+                                                    String warehouse = warehouses.get(j);
+                                                    String[] parts = warehouse.split(":");
+                                                    String id = parts[0];
+                                                    if (id.equals(String.valueOf(transfer.getSourceWarehouseId()))) {
+                                                        out.print(parts[1]);
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        %>
+                                    </td>
+                                    <td>
+                                        <%
+                                            if (fruits != null) {
+                                                for (int j = 0; j < fruits.size(); j++) {
+                                                    String fruit = fruits.get(j);
+                                                    String[] parts = fruit.split(":");
+                                                    String id = parts[0];
+                                                    if (id.equals(String.valueOf(transfer.getFruitId()))) {
+                                                        out.print(parts[1]);
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        %>
+                                    </td>
+                                    <td><%= transfer.getNum() %></td>
+                                </tr>
+                            <%
+                                    }
+                                }
+                            %>
+                        </tbody>
+                    </table>
+
+                    <div class="mb-3">
+                        <button type="submit" name="action" value="receive" class="btn btn-success">Receive Selected</button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject Selected</button>
+                    </div>
+                </form>
+
+                <h2 class="mt-5">Transaction History</h2>
                 <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Start Time</th>
+                            <th>End Time</th>
                             <th>Source</th>
                             <th>Fruit</th>
                             <th>Quantity</th>
-                            <th>Actions</th>
+                            <th>Status</th>
+                            <th>Detail Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <%
-                            List<WarehouseStockChangeBean> pendingTransfers = (List<WarehouseStockChangeBean>) request.getAttribute("pendingTransfers");
-                            List<String> warehouses = (List<String>) request.getAttribute("warehouses");
-                            List<String> fruits = (List<String>) request.getAttribute("fruits");
-                            if (pendingTransfers != null) {
-                                for (int i = 0; i < pendingTransfers.size(); i++) {
-                                    WarehouseStockChangeBean transfer = pendingTransfers.get(i);
+                            List<WarehouseStockChangeBean> transactionHistory = (List<WarehouseStockChangeBean>) request.getAttribute("transactionHistory");
+                            if (transactionHistory != null) {
+                                for (int i = 0; i < transactionHistory.size(); i++) {
+                                    WarehouseStockChangeBean transfer = transactionHistory.get(i);
                         %>
                             <tr>
                                 <td><%= transfer.getId() %></td>
                                 <td><%= transfer.getDeliveryStartTime() %></td>
+                                <td><%= transfer.getDeliveryEndTime() != null ? transfer.getDeliveryEndTime() : "N/A" %></td>
                                 <td>
                                     <%
                                         if (warehouses != null) {
@@ -79,18 +154,8 @@
                                     %>
                                 </td>
                                 <td><%= transfer.getNum() %></td>
-                                <td>
-                                    <form action="centralWarehouseReceiveServlet" method="POST" style="display:inline;">
-                                        <input type="hidden" name="transferId" value="<%= transfer.getId() %>">
-                                        <input type="hidden" name="action" value="receive">
-                                        <button type="submit" class="btn btn-success btn-sm">Receive</button>
-                                    </form>
-                                    <form action="centralWarehouseReceiveServlet" method="POST" style="display:inline;">
-                                        <input type="hidden" name="transferId" value="<%= transfer.getId() %>">
-                                        <input type="hidden" name="action" value="reject">
-                                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                                    </form>
-                                </td>
+                                <td><%= transfer.getState() %></td>
+                                <td><%= transfer.getDetailState() %></td>
                             </tr>
                         <%
                                 }
@@ -108,5 +173,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
+    <script>
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.getElementsByName('selectedItems');
+            for (let checkbox of checkboxes) {
+                checkbox.checked = selectAll.checked;
+            }
+        }
+    </script>
 </body>
 </html>

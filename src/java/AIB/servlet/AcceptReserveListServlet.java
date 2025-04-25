@@ -43,24 +43,32 @@ public class AcceptReserveListServlet extends HttpServlet {
         List<ReserveBean> reserves = new ArrayList<>();
         List<String> shops = new ArrayList<>();
         List<String> fruits = new ArrayList<>();
+        Long countryId = null;
 
         try (Connection conn = db.getConnection()) {
-            // Verify warehouse type
-            PreparedStatement stmt = conn.prepareStatement("SELECT type FROM warehouse WHERE id = ?");
+            // Verify warehouse type and get countryid
+            PreparedStatement stmt = conn.prepareStatement(
+                "SELECT type, countryid FROM warehouse WHERE id = ?"
+            );
             stmt.setLong(1, warehouseId);
             ResultSet rs = stmt.executeQuery();
             if (!rs.next() || !"C".equals(rs.getString("type"))) {
                 response.sendRedirect("login.jsp?error=invalid_warehouse_type");
                 return;
             }
+            countryId = rs.getLong("countryid");
 
-            // Get pending reserves
+            // Get pending reserves for shops in the same country
             stmt = conn.prepareStatement(
                 "SELECT r.*, rd.fruitid, rd.num " +
                 "FROM reserve r " +
                 "JOIN reserveDetail rd ON r.id = rd.reserveid " +
-                "WHERE r.state = 'C'"
+                "JOIN shop s ON r.Shopid = s.id " +
+                "JOIN city ci ON s.cityid = ci.id " +
+                "WHERE r.state = 'C' AND ci.countryid = ? " +
+                "ORDER BY r.id, rd.fruitid"
             );
+            stmt.setLong(1, countryId);
             rs = stmt.executeQuery();
             while (rs.next()) {
                 ReserveBean reserve = new ReserveBean();
@@ -73,8 +81,14 @@ public class AcceptReserveListServlet extends HttpServlet {
                 reserves.add(reserve);
             }
 
-            // Get shop names for display
-            stmt = conn.prepareStatement("SELECT id, name FROM shop");
+            // Get shop names for display (same country only)
+            stmt = conn.prepareStatement(
+                "SELECT s.id, s.name " +
+                "FROM shop s " +
+                "JOIN city ci ON s.cityid = ci.id " +
+                "WHERE ci.countryid = ?"
+            );
+            stmt.setLong(1, countryId);
             rs = stmt.executeQuery();
             while (rs.next()) {
                 shops.add(rs.getLong("id") + ":" + rs.getString("name"));
@@ -89,7 +103,7 @@ public class AcceptReserveListServlet extends HttpServlet {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", "資料庫錯誤，請聯繫管理員");
+            request.setAttribute("error", "Database error, please contact administrator");
         }
 
         request.setAttribute("reserves", reserves);
@@ -112,8 +126,14 @@ public class AcceptReserveListServlet extends HttpServlet {
             return;
         }
 
-        Long reserveId = Long.parseLong(request.getParameter("reserveId"));
+        String[] selectedReserves = request.getParameterValues("selectedReserves");
         String action = request.getParameter("action");
+
+        if (selectedReserves == null || selectedReserves.length == 0) {
+            request.setAttribute("error", "No reservations selected");
+            doGet(request, response);
+            return;
+        }
 
         try (Connection conn = db.getConnection()) {
             conn.setAutoCommit(false);
@@ -128,58 +148,96 @@ public class AcceptReserveListServlet extends HttpServlet {
                 return;
             }
 
-            if ("approve".equals(action)) {
-                // Check stock availability
-                stmt = conn.prepareStatement(
-                    "SELECT rd.num, rd.fruitid FROM reserveDetail rd WHERE rd.reserveid = ?"
-                );
-                stmt.setLong(1, reserveId);
-                rs = stmt.executeQuery();
-                rs.next();
-                Long fruitId = rs.getLong("fruitid");
-                int num = rs.getInt("num");
+            for (String reserveIdStr : selectedReserves) {
+                Long reserveId = Long.parseLong(reserveIdStr);
 
-                stmt = conn.prepareStatement(
-                    "SELECT num FROM warehouseStock WHERE warehouseid = ? AND fruitid = ?"
-                );
-                stmt.setLong(1, warehouseId);
-                stmt.setLong(2, fruitId);
-                rs = stmt.executeQuery();
-                if (!rs.next() || rs.getInt("num") < num) {
-                    conn.rollback();
-                    request.setAttribute("error", "庫存不足，無法批准預訂");
-                    doGet(request, response);
-                    return;
+                if ("approve".equals(action)) {
+                    // Check stock availability for all fruits in the reservation
+                    stmt = conn.prepareStatement(
+                        "SELECT rd.fruitid, rd.num, COALESCE(ws.num, 0) AS stock " +
+                        "FROM reserveDetail rd " +
+                        "LEFT JOIN warehouseStock ws ON ws.fruitid = rd.fruitid AND ws.warehouseid = ? " +
+                        "WHERE rd.reserveid = ?"
+                    );
+                    stmt.setLong(1, warehouseId);
+                    stmt.setLong(2, reserveId);
+                    rs = stmt.executeQuery();
+                    boolean sufficientStock = true;
+                    List<Long> fruitIds = new ArrayList<>();
+                    List<Integer> quantities = new ArrayList<>();
+
+                    while (rs.next()) {
+                        int requiredNum = rs.getInt("num");
+                        int availableStock = rs.getInt("stock");
+                        if (availableStock < requiredNum) {
+                            sufficientStock = false;
+                            break;
+                        }
+                        fruitIds.add(rs.getLong("fruitid"));
+                        quantities.add(requiredNum);
+                    }
+
+                    if (!sufficientStock) {
+                        conn.rollback();
+                        request.setAttribute("error", "Insufficient stock for reservation ID " + reserveId);
+                        doGet(request, response);
+                        return;
+                    }
+
+                    // Update reserve status
+                    stmt = conn.prepareStatement(
+                        "UPDATE reserve SET state = 'A' WHERE id = ?"
+                    );
+                    stmt.setLong(1, reserveId);
+                    stmt.executeUpdate();
+
+                    // Update warehouse stock for each fruit
+                    stmt = conn.prepareStatement(
+                        "UPDATE warehouseStock SET num = num - ? WHERE warehouseid = ? AND fruitid = ?"
+                    );
+                    for (int i = 0; i < fruitIds.size(); i++) {
+                        stmt.setInt(1, quantities.get(i));
+                        stmt.setLong(2, warehouseId);
+                        stmt.setLong(3, fruitIds.get(i));
+                        stmt.addBatch();
+                    }
+                    stmt.executeBatch();
+
+                    // Update shop stock for each fruit
+                    stmt = conn.prepareStatement(
+                        "SELECT Shopid FROM reserve WHERE id = ?"
+                    );
+                    stmt.setLong(1, reserveId);
+                    rs = stmt.executeQuery();
+                    rs.next();
+                    Long shopId = rs.getLong("Shopid");
+
+                    stmt = conn.prepareStatement(
+                        "INSERT INTO shopStock (shopid, fruitid, num) VALUES (?, ?, ?) " +
+                        "ON DUPLICATE KEY UPDATE num = num + ?"
+                    );
+                    for (int i = 0; i < fruitIds.size(); i++) {
+                        stmt.setLong(1, shopId);
+                        stmt.setLong(2, fruitIds.get(i));
+                        stmt.setInt(3, quantities.get(i));
+                        stmt.setInt(4, quantities.get(i));
+                        stmt.addBatch();
+                    }
+                    stmt.executeBatch();
+                } else if ("reject".equals(action)) {
+                    // Update reserve status
+                    stmt = conn.prepareStatement(
+                        "UPDATE reserve SET state = 'R' WHERE id = ?"
+                    );
+                    stmt.setLong(1, reserveId);
+                    stmt.executeUpdate();
                 }
-
-                // Update reserve status
-                stmt = conn.prepareStatement(
-                    "UPDATE reserve SET state = 'A' WHERE id = ?"
-                );
-                stmt.setLong(1, reserveId);
-                stmt.executeUpdate();
-
-                // Update warehouse stock
-                stmt = conn.prepareStatement(
-                    "UPDATE warehouseStock SET num = num - ? WHERE warehouseid = ? AND fruitid = ?"
-                );
-                stmt.setInt(1, num);
-                stmt.setLong(2, warehouseId);
-                stmt.setLong(3, fruitId);
-                stmt.executeUpdate();
-            } else if ("reject".equals(action)) {
-                // Update reserve status
-                stmt = conn.prepareStatement(
-                    "UPDATE reserve SET state = 'R' WHERE id = ?"
-                );
-                stmt.setLong(1, reserveId);
-                stmt.executeUpdate();
             }
 
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", "資料庫錯誤，請聯繫管理員");
+            request.setAttribute("error", "Database error, please contact administrator");
         }
 
         doGet(request, response);

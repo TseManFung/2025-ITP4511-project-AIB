@@ -25,79 +25,89 @@
             <div class="container mt-5">
                 <h1>Reserve Approval</h1>
 
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Shop</th>
-                            <th>Reserve Date</th>
-                            <th>Fruit</th>
-                            <th>Quantity</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <%
-                            List<ReserveBean> reserves = (List<ReserveBean>) request.getAttribute("reserves");
-                            List<String> shops = (List<String>) request.getAttribute("shops");
-                            List<String> fruits = (List<String>) request.getAttribute("fruits");
-                            if (reserves != null) {
-                                for (int i = 0; i < reserves.size(); i++) {
-                                    ReserveBean reserve = reserves.get(i);
-                        %>
+                <form action="acceptReserveListServlet" method="POST">
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td><%= reserve.getId() %></td>
-                                <td>
-                                    <%
-                                        if (shops != null) {
-                                            for (int j = 0; j < shops.size(); j++) {
-                                                String shop = shops.get(j);
-                                                String[] parts = shop.split(":");
-                                                String id = parts[0];
-                                                if (id.equals(String.valueOf(reserve.getShopId()))) {
-                                                    out.print(parts[1]);
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    %>
-                                </td>
-                                <td><%= reserve.getReserveDT() %></td>
-                                <td>
-                                    <%
-                                        if (fruits != null) {
-                                            for (int j = 0; j < fruits.size(); j++) {
-                                                String fruit = fruits.get(j);
-                                                String[] parts = fruit.split(":");
-                                                String id = parts[0];
-                                                if (id.equals(String.valueOf(reserve.getFruitId()))) {
-                                                    out.print(parts[1]);
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    %>
-                                </td>
-                                <td><%= reserve.getNum() %></td>
-                                <td>
-                                    <form action="acceptReserveListServlet" method="POST" style="display:inline;">
-                                        <input type="hidden" name="reserveId" value="<%= reserve.getId() %>">
-                                        <input type="hidden" name="action" value="approve">
-                                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                                    </form>
-                                    <form action="acceptReserveListServlet" method="POST" style="display:inline;">
-                                        <input type="hidden" name="reserveId" value="<%= reserve.getId() %>">
-                                        <input type="hidden" name="action" value="reject">
-                                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                                    </form>
-                                </td>
+                                <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
+                                <th>ID</th>
+                                <th>Shop</th>
+                                <th>Reserve Date</th>
+                                <th>Fruit</th>
+                                <th>Quantity</th>
                             </tr>
-                        <%
+                        </thead>
+                        <tbody>
+                            <%
+                                List<ReserveBean> reserves = (List<ReserveBean>) request.getAttribute("reserves");
+                                List<String> shops = (List<String>) request.getAttribute("shops");
+                                List<String> fruits = (List<String>) request.getAttribute("fruits");
+                                if (reserves != null && !reserves.isEmpty()) {
+                                    Long currentReserveId = null;
+                                    int rowSpan = 0;
+                                    for (int i = 0; i < reserves.size(); i++) {
+                                        ReserveBean reserve = reserves.get(i);
+                                        boolean isNewGroup = !reserve.getId().equals(currentReserveId);
+
+                                        if (isNewGroup) {
+                                            currentReserveId = reserve.getId();
+                                            rowSpan = 1;
+                                            // Count rows for this reserveId
+                                            for (int j = i + 1; j < reserves.size() && reserves.get(j).getId().equals(currentReserveId); j++) {
+                                                rowSpan++;
+                                            }
+                                        }
+                            %>
+                                <tr>
+                                    <% if (isNewGroup) { %>
+                                        <td rowspan="<%= rowSpan %>">
+                                            <input type="checkbox" name="selectedReserves" value="<%= reserve.getId() %>">
+                                        </td>
+                                        <td rowspan="<%= rowSpan %>"><%= reserve.getId() %></td>
+                                        <td rowspan="<%= rowSpan %>">
+                                            <%
+                                                if (shops != null) {
+                                                    for (String shop : shops) {
+                                                        String[] parts = shop.split(":");
+                                                        String id = parts[0];
+                                                        if (id.equals(String.valueOf(reserve.getShopId()))) {
+                                                            out.print(parts[1]);
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            %>
+                                        </td>
+                                        <td rowspan="<%= rowSpan %>"><%= reserve.getReserveDT() %></td>
+                                    <% } %>
+                                    <td>
+                                        <%
+                                            if (fruits != null) {
+                                                for (String fruit : fruits) {
+                                                    String[] parts = fruit.split(":");
+                                                    String id = parts[0];
+                                                    if (id.equals(String.valueOf(reserve.getFruitId()))) {
+                                                        out.print(parts[1]);
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        %>
+                                    </td>
+                                    <td><%= reserve.getNum() %></td>
+                                </tr>
+                            <%
+                                    }
                                 }
-                            }
-                        %>
-                    </tbody>
-                </table>
+                            %>
+                        </tbody>
+                    </table>
+
+                    <div class="mb-3">
+                        <button type="submit" name="action" value="approve" class="btn btn-success">Approve Selected</button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject Selected</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -108,5 +118,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
+    <script>
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.getElementsByName('selectedReserves');
+            for (let checkbox of checkboxes) {
+                checkbox.checked = selectAll.checked;
+            }
+        }
+    </script>
 </body>
 </html>

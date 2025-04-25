@@ -154,14 +154,14 @@ public class SourceWarehouseSupplyServlet extends HttpServlet {
 
     private Map<Long, Map<Long, Integer>> getSupplyDemand(Long sourceCountryId) throws SQLException {
         Map<Long, Map<Long, Integer>> demandByCountry = new HashMap<>();
-        String sql = "SELECT c.countryid, rd.fruitid, SUM(rd.num) AS total_needed " +
-                     "FROM reserve r " +
-                     "JOIN reserveDetail rd ON r.id = rd.reserveid " +
-                     "JOIN shop s ON r.Shopid = s.id " +
-                     "JOIN city c ON s.cityid = c.id " +
-                     "JOIN fruit f ON rd.fruitid = f.id " +
-                     "WHERE r.state = 'C' AND f.sourceCountryid = ? " +
-                     "GROUP BY c.countryid, rd.fruitid";
+        String sql = "SELECT c.countryid, rd.fruitid, SUM(rd.num) AS total_needed "
+                + "FROM reserve r "
+                + "JOIN reserveDetail rd ON r.id = rd.reserveid "
+                + "JOIN shop s ON r.Shopid = s.id "
+                + "JOIN city c ON s.cityid = c.id "
+                + "JOIN fruit f ON rd.fruitid = f.id "
+                + "WHERE r.state = 'C' AND f.sourceCountryid = ? "
+                + "GROUP BY c.countryid, rd.fruitid";
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, sourceCountryId);
             ResultSet rs = stmt.executeQuery();
@@ -179,7 +179,7 @@ public class SourceWarehouseSupplyServlet extends HttpServlet {
         Map<Long, Integer> availableStock = new LinkedHashMap<>();
         String sql = "SELECT ws.fruitid, (ws.num - COALESCE(SUM(wscd.num), 0)) AS available_num "
                 + "FROM warehouseStock ws "
-                + "LEFT JOIN warehouseStockChange wsc ON ws.warehouseid = wsc.sourceWarehouseid AND wsc.state IN ('C', 'A') "
+                + "LEFT JOIN warehouseStockChange wsc ON ws.warehouseid = wsc.sourceWarehouseid AND wsc.state IN ('C') "
                 + "LEFT JOIN warehouseStockChangeDetail wscd ON wsc.id = wscd.warehouseStockChangeid AND ws.fruitid = wscd.fruitid "
                 + "WHERE ws.warehouseid = ? GROUP BY ws.fruitid, ws.num";
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -221,7 +221,9 @@ public class SourceWarehouseSupplyServlet extends HttpServlet {
         try {
             conn.setAutoCommit(false);
             long changeId = SnowflakeSingleton.getInstance().nextId();
-            String changeSql = "INSERT INTO warehouseStockChange (id, sourceWarehouseid, destinationWarehouseid, state) VALUES (?, ?, ?, 'C')";
+
+            // Insert into warehouseStockChange
+            String changeSql = "INSERT INTO warehouseStockChange (id, sourceWarehouseid, destinationWarehouseid, state) VALUES (?, ?, ?, 'A')";
             try (PreparedStatement stmt = conn.prepareStatement(changeSql)) {
                 stmt.setLong(1, changeId);
                 stmt.setLong(2, sourceWarehouseId);
@@ -229,15 +231,28 @@ public class SourceWarehouseSupplyServlet extends HttpServlet {
                 stmt.executeUpdate();
             }
 
-            String detailSql = "INSERT INTO warehouseStockChangeDetail (warehouseStockChangeid, fruitid, num) VALUES (?, ?, ?)";
-            try (PreparedStatement stmt = conn.prepareStatement(detailSql)) {
+            // Insert into warehouseStockChangeDetail and update warehouseStock
+            String detailSql = "INSERT INTO warehouseStockChangeDetail (warehouseStockChangeid, fruitid, num, state) VALUES (?, ?, ?, 'C')";
+            String stockUpdateSql = "UPDATE warehouseStock SET num = num - ? WHERE warehouseid = ? AND fruitid = ?";
+            try (PreparedStatement detailStmt = conn.prepareStatement(detailSql); PreparedStatement stockStmt = conn.prepareStatement(stockUpdateSql)) {
                 for (Map.Entry<Long, Integer> entry : demand.entrySet()) {
-                    stmt.setLong(1, changeId);
-                    stmt.setLong(2, entry.getKey());
-                    stmt.setInt(3, entry.getValue());
-                    stmt.addBatch();
+                    Long fruitId = entry.getKey();
+                    Integer quantity = entry.getValue();
+
+                    // Insert detail record
+                    detailStmt.setLong(1, changeId);
+                    detailStmt.setLong(2, fruitId);
+                    detailStmt.setInt(3, quantity);
+                    detailStmt.addBatch();
+
+                    // Decrease source warehouse stock
+                    stockStmt.setInt(1, quantity);
+                    stockStmt.setLong(2, sourceWarehouseId);
+                    stockStmt.setLong(3, fruitId);
+                    stockStmt.addBatch();
                 }
-                stmt.executeBatch();
+                detailStmt.executeBatch();
+                stockStmt.executeBatch();
             }
 
             conn.commit();

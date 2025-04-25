@@ -34,9 +34,9 @@
 
         <div class="d-flex position-relative content-bg justify-content-center">
             <div class="container dashboard-container">
-                <h1 class="mb-4">WareHouse Dashboard</h1>
+                <h1 class="mb-4">This is the home page of warehouse clerk</h1>
 
-          
+                
               
             </div>
         </div>
