@@ -33,7 +33,7 @@ public class NavbarTag extends SimpleTagSupport {
                 put("Reserve form Warehouse", "/ReserveServlet");
                 put("Reservtion Record", "/ReserveRecordServlet");
                 put("Borrow form Other Shop", "/BorrowServlet");
-                put("Borrow Record", "/BorrowRecordsServlet");
+                put("Borrow Record", "/BorrowRecordServlet");
                 put("Stock Update", "/StockUpdateServlet");
             }
         };
@@ -105,7 +105,6 @@ public class NavbarTag extends SimpleTagSupport {
         } else if ("C".equals(warehouseType)) { 
             warehouseNav.put("Stock Receive", "/centralWarehouseReceiveServlet");
             warehouseNav.put("Reverse", "/acceptReserveListServlet");
-            warehouseNav.put("Stock Mangement", "/inventoryManagementServlet");
         } else {
             warehouseNav.put("Warehouse Dashboard", "/Warehouse/warehouseDashboard.jsp");
             warehouseNav.put("Inventory Management", "/inventoryServlet");

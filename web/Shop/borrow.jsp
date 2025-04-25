@@ -1,33 +1,20 @@
-<%-- 
-    Document   : borrow
-    Created on : 2025年4月23日, 上午10:05:53
-    Author     : andyt
---%>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
+<%@ page import="java.util.List" %>
+<%@ page import="AIB.Bean.ShopBean" %>
+<%@ page import="AIB.Bean.FruitBean" %>
 <!DOCTYPE html>
 <html>
     <head>
         <jsp:include page="/component/head.jsp" />
-        <title>Borrow fruits</title>
+        <title>Borrow Fruits</title>
     </head>
     <body>
         <jsp:include page="/component/modal.jsp" />
 
         <component:navbar />
-        <%!
-            public String getErrorMessage(int errorCode) {
-                switch (errorCode) {
-                    case 1:
-                        return "Invalid reservation ID.";
-                    case 2:
-                        return "Database error occurred.";
-                    default:
-                        return "An unknown error occurred.";
-                }
-            }
-        %>
+
         <!-- header -->
         <div style="height: calc(0lvh + 128px)" id="header"></div>
         <!-- /header -->
@@ -35,98 +22,114 @@
         <!-- content -->
         <div class="d-flex position-relative content-bg justify-content-center">
             <div class="container">
-                <h2 class="mb-4">Borrow Fruits from Same City Shops</h2>
+                <h2 class="mb-4">Borrow Fruits</h2>
 
-                <%-- 顯示錯誤訊息 --%>
+                <%-- 顯示成功或錯誤訊息 --%>
                 <%
+                String targetShopId = request.getParameter("targetShopId");
+                    String successMessage = request.getParameter("success");
                     String errorMessage = null;
                     if (request.getParameter("error") != null) {
                         int errorCode = Integer.parseInt(request.getParameter("error"));
-                        errorMessage = getErrorMessage(errorCode);
+                        switch (errorCode) {
+                            case 1:
+                                errorMessage = "Invalid borrow quantity.";
+                                break;
+                            case 2:
+                                errorMessage = "Database error occurred.";
+                                break;
+                            default:
+                                errorMessage = "Unknown error.";
+                        }
                     }
                 %>
-                <% if (errorMessage != null) {%>
+                <% if (successMessage != null) { %>
+                <div class="alert alert-success">
+                    Borrow request submitted successfully! Your borrow ID is: <%= successMessage %>
+                </div>
+                <% } %>
+                <% if (errorMessage != null) { %>
                 <div class="alert alert-danger">
-                    <%= errorMessage%>
+                    <%= errorMessage %>
                 </div>
                 <% } %>
 
-                <form method="post">
+                <%-- 使用 jsp:useBean 來處理 ShopBean 資料 --%>
+                <jsp:useBean id="stocks" type="java.util.List<AIB.Bean.ShopBean>" scope="request" />
+                <form method="get" action="BorrowServlet">
                     <div class="mb-3">
-                        <label class="form-label">Select Destination Shop:</label>
-                        <select name="destShopId" class="form-select" required>
-                            <%-- 檢查 stocks 是否為 null --%>
-                            <%
-                                java.util.Map<String, Object> stocks = (java.util.Map<String, Object>) request.getAttribute("stocks");
-                                if (stocks != null) {
-                                    for (java.util.Map.Entry<String, Object> entry : stocks.entrySet()) {
-                                        String shopId = entry.getKey().split("\\|")[0];
-                                        String shopName = ((java.util.Map<String, String>) entry.getValue()).get("shopName");
-                            %>
-                            <option value="<%= shopId%>"><%= shopName%></option>
-                            <%
-                                }
-                            } else {
-                            %>
-                            <option value="">No shops available</option>
-                            <% } %>
+                        <label for="targetShopId" class="form-label">Select Target Shop</label>
+                        <select id="targetShopId" name="targetShopId" class="form-select" required>
+                            <option value="" disabled selected>Select a shop</option>
+                            <% if (stocks != null && !stocks.isEmpty()) {
+                                for (ShopBean shop : stocks) { %>
+                                    <option value="<%= shop.getShopid() %>" 
+                                            <%= targetShopId != null && Long.parseLong(targetShopId) == shop.getShopid() ? "selected" : "" %>>
+                                        <%= shop.getShopName() %> - <%= shop.getCityName() %>, <%= shop.getCountryName() %>
+                                    </option>
+                            <% } } %>
                         </select>
                     </div>
+                    <button type="submit" class="btn btn-secondary">Load Fruits</button>
+                </form>
+
+                <br><br>
+                <%-- 如果有選擇目標商店，顯示水果列表 --%>
+                <%
+                    
+                    if (targetShopId != null && !targetShopId.isEmpty()) {
+                        %>
+                <form method="post" action="BorrowServlet">
+                    <input type="hidden" name="sourceShopId" value="<%= targetShopId %>">
 
                     <table class="table table-striped">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Shop Name</th>
                                 <th>Fruit Name</th>
                                 <th>Available Quantity</th>
+                                <th>Unit</th>
                                 <th>Borrow Quantity</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <%
-                                if (stocks != null) {
-                                    for (java.util.Map.Entry<String, Object> entry : stocks.entrySet()) {
-                                        String[] keys = entry.getKey().split("\\|");
-                                        String shopName = ((java.util.Map<String, String>) entry.getValue()).get("shopName");
-                                        String fruitName = ((java.util.Map<String, String>) entry.getValue()).get("fruitName");
-                                        int quantity = Integer.parseInt(((java.util.Map<String, String>) entry.getValue()).get("quantity"));
-                            %>
+                            <% if (stocks != null && !stocks.isEmpty()) {
+                                for (ShopBean shop : stocks) {
+                                    for (FruitBean fruit : shop.getFruits()) { 
+                                        if (fruit.getQuantity() != 0) { %>
+                                    
                             <tr>
-                                <td><%= shopName%></td>
-                                <td><%= fruitName%></td>
-                                <td><%= quantity%></td>
+                                <td><%= fruit.getName() %></td>
+                                <td><%= fruit.getQuantity() %></td>
+                                <td><%= fruit.getUnit() %></td>
                                 <td>
-                                    <input type="number" name="fruit_<%= keys[1]%>" 
-                                           class="form-control" min="0" max="<%= quantity%>"
+                                    <input type="number" name="fruit_<%= fruit.getId() %>" value="0"
+                                           class="form-control" min="0" max="<%= fruit.getQuantity() %>"
                                            required oninput="validateQuantity(this)">
                                 </td>
                             </tr>
-                            <%
-                                }
-                            } else {
-                            %>
+                            <% } } } } else { %>
                             <tr>
-                                <td colspan="4" class="text-center">No stock data available</td>
+                                <td colspan="4" class="text-center">No fruits available for borrowing</td>
                             </tr>
-                            <% }%>
+                            <% } %>
                         </tbody>
                     </table>
-                    <button type="submit" class="btn btn-primary">Submit Borrow Request</button>
+                    <button type="submit" class="btn btn-primary" id="submitButton" onclick="hideButtonAndSubmit(this)">Submit Borrow Request</button>
                 </form>
-            </div> 
+                <% } %>
+            </div>
         </div>
         <!-- /content -->
 
         <!-- GoToTop -->
         <div id="page-top" style="">
-            <a href="#header"><img src="<%= request.getContextPath()%>/images/common/returan-top.png" /></a>
+            <a href="#header"><img src="<%= request.getContextPath() %>/images/common/returan-top.png" /></a>
         </div>
         <!-- /GoToTop -->
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>      
+                crossorigin="anonymous"></script>
         <script>
             function validateQuantity(input) {
                 const max = parseInt(input.max);
@@ -135,6 +138,18 @@
                 } else {
                     input.setCustomValidity('');
                 }
+            }
+
+            function hideButtonAndSubmit(button) {
+                const form = button.form;
+
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                button.style.display = 'none';
+                form.submit();
             }
         </script>
     </body>

@@ -1,123 +1,272 @@
-<%-- Document : borrowRecords Created on : 2025年4月23日, 下午7:23:30 Author : andyt --%>
-
-<%@page import="java.util.List"%>
-<%@page import="java.util.Map"%>
 <%@ page contentType="text/html; charset=UTF-8" %>
-<%@ page isELIgnored="true" %>
+<%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.util.List" %>
+<%@ page import="AIB.Bean.BorrowBean" %>
+<%! SimpleDateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd"); %>
 <!DOCTYPE html>
 <html>
 
-    <head>
-        <jsp:include page="/component/head.jsp" />
-        <title>Borrow record</title>
-        <style>
-            .state-badge {
-                padding: 0.25em 0.4em;
-                border-radius: 0.25rem;
-            }
+<head>
+<jsp:include page="/component/head.jsp" />
+<title>Borrow Records</title>
+<style>
+.state-C {
+background-color: rgb(129, 143, 230);
+}
 
-            .state-C {
-                background-color: blue;
-            }
+.state-A {
+background-color: greenyellow;
+}
 
-            .state-A {
-                background-color: greenyellow;
-            }
+.state-R {
+background-color: #dc3545;
+}
 
-            .state-R {
-                background-color: #dc3545;
-            }
+.state-F {
+background-color: grey;
+}
 
-            .state-F {
-                background-color: grey;
-            }
-        </style>
+.state-badge {
+padding: 3px 8px;
+border-radius: 12px;
+}
+</style>
+</head>
 
-    </head>
+<body>
+<jsp:include page="/component/modal.jsp" />
 
-    <body>
-        <jsp:include page="/component/modal.jsp" />
+<component:navbar />
 
-        <component:navbar />
+<!-- header -->
+<div style="height: calc(0lvh + 128px)" id="header"></div>
+<!-- /header -->
 
-        <!-- header -->
-        <div style="height: calc(0lvh + 128px)" id="header"></div>
-        <!-- /header -->
-        <%
-            // 從 request 中獲取 records
-            List<Map<String, Object>> records = (List<Map<String, Object>>) request.getAttribute("records");
+<!-- content -->
+<div class="d-flex position-relative content-bg justify-content-center">
+<div class="container">
+<h2 class="mb-4">Borrow Records</h2>
+
+<%-- 顯示成功或錯誤訊息 --%>
+<% String successMessage=request.getParameter("success"); String
+errorMessage=null; if (request.getParameter("error") !=null) { int
+errorCode=Integer.parseInt(request.getParameter("error")); switch
+(errorCode) { case 1: errorMessage="Invalid borrow ID." ; break; case 2:
+errorMessage="Database error occurred." ; break; default:
+errorMessage="An unknown error occurred." ; break; } } %>
+<% if (successMessage !=null) { %>
+<div class="alert alert-success">Borrow #<%= successMessage %>
+completed successfully</div>
+<% } %>
+<% if (errorMessage !=null) { %>
+<div class="alert alert-danger">
+<%= errorMessage %>
+</div>
+<% } %>
+
+<div class="card mb-4">
+<div class="card-header">Filter & Sort</div>
+<div class="card-body">
+<form method="get" class="row g-3">
+<div class="col-md-4">
+<label class="form-label">Filter by
+Status:</label>
+<select name="filter"
+class="form-select"
+onchange="this.form.submit()">
+<option value="">Default</option>
+<option value="C" <%="C"
+    .equals(request.getParameter("filter"))
+    ? "selected" : "" %>>Created
+</option>
+<option value="A" <%="A"
+    .equals(request.getParameter("filter"))
+    ? "selected" : "" %>
+>Approved</option>
+<option value="R" <%="R"
+    .equals(request.getParameter("filter"))
+    ? "selected" : "" %>
+>Rejected</option>
+<option value="F" <%="F"
+    .equals(request.getParameter("filter"))
+    ? "selected" : "" %>
+>Finished</option>
+</select>
+</div>
+<div class="col-md-4">
+<label class="form-label">Sort
+by:</label>
+<select name="sort" class="form-select"
+onchange="this.form.submit()">
+<option value="">Default</option>
+<option value="date" <%="date"
+    .equals(request.getParameter("sort"))
+    ? "selected" : "" %>>Borrow
+Date</option>
+<option value="itemCount"
+    <%="itemCount"
+    .equals(request.getParameter("sort"))
+    ? "selected" : "" %>>Item
+Count</option>
+<option value="status" <%="status"
+    .equals(request.getParameter("sort"))
+    ? "selected" : "" %>>Status
+</option>
+</select>
+</div>
+</form>
+</div>
+</div>
+
+<table class="table table-bordered">
+<thead class="thead-dark">
+<tr>
+<th>Borrow ID</th>
+<th>Borrow Date</th>
+<th>Source Shop</th>
+<th>Destination Shop</th>
+<th>Items Count</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<%-- 使用 <jsp:useBean> 和 BorrowBean 來顯示資料 --%>
+<jsp:useBean id="records"
+    type="java.util.List"
+    scope="request" />
+<% List<BorrowBean> borrowRecords = (List
+<BorrowBean>)
+request.getAttribute("records");
+if (borrowRecords != null &&
+!borrowRecords.isEmpty()) {
+for (BorrowBean record :
+borrowRecords) {
+%>
+<tr
+class="state-<%= record.getBorrowState() %>">
+<td>
+    <%= record.getBorrowId() %>
+</td>
+<td>
+    <%= dateFormat.format(record.getBorrowDate())
         %>
-        <!-- content -->
-        <div class="d-flex position-relative content-bg justify-content-center">
-            <div class="container">
-                <h3 class="mb-4">Borrow Records Management</h3>
+</td>
+<td>
+    <%= record.getSourceShopName()
+        %>
+</td>
+<td>
+    <%= record.getDestinationShopName()
+        %>
+</td>
+<td>
+    <%= record.getItemCount() %>
+</td>
+<td>
+    <span
+            class="state-badge state-<%= record.getBorrowState() %>">
+        <% String stateText;
+            switch
+            (record.getBorrowState())
+            { case "C" :
+            stateText="Created" ;
+            break; case "A" :
+            stateText="Approved"
+            ; break; case "R" :
+            stateText="Rejected"
+            ; break; case "F" :
+            stateText="Finished"
+            ; break; default:
+            stateText="Unknown" ;
+            break; } %>
+            <%= stateText %>
+    </span>
+</td>
+<td>
+    <% if
+        (!("F".equals(record.getBorrowState())))
+        { %>
+        <form method="post"
+                action="BorrowRecordsServlet"
+                style="display:inline">
+        
+        <% if
+            ("A".equals(record.getBorrowState())&& 
+            record.getDestinationShopId().equals(session.getAttribute("shopId"))) 
+            { %>
 
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Date</th>
-                            <th>From Shop</th>
-                            <th>To Shop</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (records != null) { %>
-                        <% for (Object recordObj : records) {
-                                Record record = (Record) recordObj;%>
-                        <tr>
-                            <td><%= record.getDT()%></td>
-                            <td><%= record.getFromShop()%></td>
-                            <td><%= record.getToShop()%></td>
-                            <td>
-                                <span class="state-badge state-<%= record.getState()%> text-white">
-                                    <% String state = record.getState();
-                                        if ("C".equals(state)) { %>
-                                    Pending
-                                    <% } else if ("A".equals(state)) { %>
-                                    Approved
-                                    <% } else if ("R".equals(state)) { %>
-                                    Rejected
-                                    <% }%>
-                                </span>
-                            </td>
-                            <td>
-                                <a href="BorrowRecordsDetail?id=<%= record.getId()%>" class="btn btn-sm btn-outline-primary">View</a>
-                                <% if ("A".equals(record.getState())) {%>
-                                <form method="post" class="d-inline">
-                                    <input type="hidden" name="recordId" value="<%= record.getId()%>">
-                                    <button type="submit" name="action" value="complete" class="btn btn-sm btn-success ms-2">Complete</button>
-                                </form>
-                                <% } %>
-                            </td>
-                        </tr>
-                        <% } %>
-                        <% } else { %>
-                        <tr>
-                            <td colspan="5" class="text-center">No records found.</td>
-                        </tr>
-                        <% }%>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <!-- /content -->
+            <input type="hidden"
+                    name="recordId"
+                    value="<%= record.getBorrowId() %>">
+            <input type="hidden"
+                    name="action"
+                    value="complete">
+            <button type="submit"
+                    class="btn btn-sm btn-success"
+                    onclick="return confirm('Mark as completed?')">Complete</button>
+                </form>
+            <% } %>
+                <!-- 如果state is C and souceshopid != shopid, show two button for accept or reject -->
 
-    <!-- GoToTop -->
-    <div id="page-top" style="">
-        <a href="#header"><img
-                src="<%= pageContext.getRequest().getContextPath()%>/images/common/returan-top.png" /></a>
-    </div>
-    <!-- /GoToTop -->
+            <% if
+                ("C".equals(record.getBorrowState())
+                && record.getSourceShopId().equals(session.getAttribute("shopId"))) { %>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"></script>
-    <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
+                <input type="hidden"
+                        name="recordId"
+                        value="<%= record.getBorrowId() %>">
+                <input type="hidden"
+                        name="action"
+                        value="accept">
+                <button type="submit"
+                        class="btn btn-sm btn-primary">Accept</button>
+                </form>
+                <form method="post"
+                    action="BorrowRecordsServlet"
+                    style="display:inline">
+                <input type="hidden"
+                        name="recordId"
+                        value="<%= record.getBorrowId() %>">
+                <input type="hidden"
+                        name="action"
+                        value="reject">
+                <button type="submit"
+                        class="btn btn-sm btn-danger">Reject</button> 
+                    </form>
+            
+            
+                <% }} %>
+                    <a href="BorrowRecordDetailServlet?id=<%= record.getBorrowId() %>"
+                        class="btn btn-sm btn-info">Details</a>
+</td>
+</tr>
+<% } } else { %>
+<tr>
+    <td colspan="7"
+        class="text-center">No
+        borrow records available
+    </td>
+</tr>
+<% } %>
+</tbody>
+</table>
+</div>
+</div>
+<!-- /content -->
+
+<!-- GoToTop -->
+<div id="page-top" style="">
+<a href="#header"><img
+src="<%= request.getContextPath() %>/images/common/returan-top.png" /></a>
+</div>
+<!-- /GoToTop -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+crossorigin="anonymous"></script>
 </body>
 
 </html>
