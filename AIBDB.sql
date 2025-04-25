@@ -112,6 +112,7 @@ CREATE TABLE `warehouseStockChangeDetail` (
   `warehouseStockChangeid` BIGINT,
   `fruitid` BIGINT,
   `num` int NOT NULL,
+  `state` ENUM ('C', 'A', 'R', 'F') NOT NULL DEFAULT 'C' COMMENT 'C = create, A = approve, R = Reject, F = finish',
   PRIMARY KEY (`warehouseStockChangeid`, `fruitid`)
 );
 
