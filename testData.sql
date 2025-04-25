@@ -23,6 +23,8 @@ INSERT INTO warehouse (id, countryid, name, type) VALUES
 (301, 3, 'HK Source Warehouse', 'S'),
 (302, 3, 'HK Central Warehouse', 'C');
 
+
+
 -- 店铺数据（每个城市至少1个店铺）
 INSERT INTO shop (id, cityid, name) VALUES
 -- Tokyo
@@ -83,7 +85,7 @@ INSERT INTO shopStock (shopid, fruitid, num) VALUES
 -- 纽约Shop A
 (3001, 3, 30),   -- 蓝莓
 (3001, 4, 10);   -- 牛油果
-/*
+
 -- 业务记录（借货、预订、运输）
 -- 借货记录（同城店铺）
 INSERT INTO borrow (id, sourceShopid, destinationShopid, state) VALUES
@@ -114,10 +116,13 @@ INSERT INTO warehouseStockChangeDetail (warehouseStockChangeid, fruitid, num) VA
 
 -- 跨国运输记录（香港→美国）
 INSERT INTO warehouseStockChange (id, sourceWarehouseid, destinationWarehouseid, deliveryStartTime, deliveryEndTime, state) VALUES
-(2, 301, 202, '2024-01-03 08:00:00', '2024-01-05 12:00:00', 'F');
+(2, 301, 202, '2024-01-03 08:00:00', '2024-01-05 12:00:00', 'F'),
+(4, 301, 202, '2024-01-04 12:00:00', '2024-01-08 7:00:00', 'F');
 INSERT INTO warehouseStockChangeDetail (warehouseStockChangeid, fruitid, num) VALUES
 (2, 5, 100),   -- 运输100箱芒果
-(2, 6, 50);    -- 运输50个火龙果
+(2, 6, 50),
+(4,5,20);    -- 运输50个火龙果
+
 
 -- 同國运输记录（美国）
 INSERT INTO warehouseStockChange (id, sourceWarehouseid, destinationWarehouseid, deliveryStartTime, deliveryEndTime, state) VALUES
@@ -125,4 +130,3 @@ INSERT INTO warehouseStockChange (id, sourceWarehouseid, destinationWarehouseid,
 INSERT INTO warehouseStockChangeDetail (warehouseStockChangeid, fruitid, num) VALUES
 (3, 3, 200),   -- 运输200箱蓝莓
 (3, 4, 100);   -- 运输100kg牛油果
-*/
