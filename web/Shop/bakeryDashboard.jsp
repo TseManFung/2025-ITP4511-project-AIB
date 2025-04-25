@@ -5,7 +5,7 @@
 <html>
     <head>
         <jsp:include page="/component/head.jsp" />
-        <title>page name</title>
+        <title></title>
 
 
     </head>
