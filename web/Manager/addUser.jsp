@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page import="java.util.Map" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -14,7 +14,6 @@
             .required-star {
                 color: red;
             }
-
             .content-bg {
                 min-height: calc(100vh);
             }
@@ -22,10 +21,10 @@
     </head>
     <body>
         <jsp:include page="/component/modal.jsp" />
-         <component:navbar/>
+        <component:navbar/>
 
         <!-- header -->
-     <div style="height: calc(0lvh + 128px); background-color: white;" id="header"></div>
+        <div style="height: calc(0lvh + 128px); background-color: white;" id="header"></div>
         <!-- /header -->
 
         <!-- content -->
@@ -34,9 +33,14 @@
                 <div class="container mt-5">
                     <h1>Add New User</h1>
 
-                    <c:if test="${not empty error}">
-                        <div class="alert alert-danger">${error}</div>
-                    </c:if>
+                    <%
+                        String error = (String) request.getAttribute("error");
+                        if (error != null && !error.isEmpty()) {
+                    %>
+                        <div class="alert alert-danger"><%= error %></div>
+                    <%
+                        }
+                    %>
 
                     <form action="addUserServlet" method="POST" onsubmit="return validateForm()">
                         <div class="mb-3">
@@ -70,9 +74,18 @@
                             <label class="form-label">Select Shop <span class="required-star">*</span></label>
                             <select name="shopId" class="form-select">
                                 <option value="">-- Select Shop --</option>
-                                <c:forEach items="${shops}" var="shop">
-                                    <option value="${shop.key}">${shop.value} (ID: ${shop.key})</option>
-                                </c:forEach>
+                                <%
+                                    Map<Long, String> shops = (Map<Long, String>) request.getAttribute("shops");
+                                    if (shops != null) {
+                                        for (Map.Entry<Long, String> shop : shops.entrySet()) {
+                                            Long key = shop.getKey();
+                                            String value = shop.getValue();
+                                %>
+                                    <option value="<%= key %>"><%= value %> (ID: <%= key %>)</option>
+                                <%
+                                        }
+                                    }
+                                %>
                             </select>
                         </div>
 
@@ -80,9 +93,18 @@
                             <label class="form-label">Select Warehouse <span class="required-star">*</span></label>
                             <select name="warehouseId" class="form-select">
                                 <option value="">-- Select Warehouse --</option>
-                                <c:forEach items="${warehouses}" var="warehouse">
-                                    <option value="${warehouse.key}">${warehouse.value} (ID: ${warehouse.key})</option>
-                                </c:forEach>
+                                <%
+                                    Map<Long, String> warehouses = (Map<Long, String>) request.getAttribute("warehouses");
+                                    if (warehouses != null) {
+                                        for (Map.Entry<Long, String> warehouse : warehouses.entrySet()) {
+                                            Long key = warehouse.getKey();
+                                            String value = warehouse.getValue();
+                                %>
+                                    <option value="<%= key %>"><%= value %> (ID: <%= key %>)</option>
+                                <%
+                                        }
+                                    }
+                                %>
                             </select>
                         </div>
 
@@ -102,48 +124,46 @@
         </div>
         <!-- /GoToTop -->
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-                integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>      
         <script>
-                        function updateFieldVisibility() {
-                            const role = document.getElementById('roleSelect').value;
-                            const shopField = document.getElementById('shopField');
-                            const warehouseField = document.getElementById('warehouseField');
+            function updateFieldVisibility() {
+                const role = document.getElementById('roleSelect').value;
+                const shopField = document.getElementById('shopField');
+                const warehouseField = document.getElementById('warehouseField');
 
-                            shopField.style.display = role === 'B' ? 'block' : 'none';
-                            warehouseField.style.display = role === 'W' ? 'block' : 'none';
+                shopField.style.display = role === 'B' ? 'block' : 'none';
+                warehouseField.style.display = role === 'W' ? 'block' : 'none';
 
-                            shopField.querySelector('select').required = role === 'B';
-                            warehouseField.querySelector('select').required = role === 'W';
-                        }
+                shopField.querySelector('select').required = role === 'B';
+                warehouseField.querySelector('select').required = role === 'W';
+            }
 
-                        function validateForm() {
-                            const role = document.getElementById('roleSelect').value;
-                            let isValid = true;
+            function validateForm() {
+                const role = document.getElementById('roleSelect').value;
+                let isValid = true;
 
-                            if (role === 'B') {
-                                const shopSelect = document.querySelector('#shopField select');
-                                if (shopSelect.value === '') {
-                                    alert('Please select a shop for Bakery Staff');
-                                    isValid = false;
-                                }
-                            }
+                if (role === 'B') {
+                    const shopSelect = document.querySelector('#shopField select');
+                    if (shopSelect.value === '') {
+                        alert('Please select a shop for Bakery Staff');
+                        isValid = false;
+                    }
+                }
 
-                            if (role === 'W') {
-                                const warehouseSelect = document.querySelector('#warehouseField select');
-                                if (warehouseSelect.value === '') {
-                                    alert('Please select a warehouse for Warehouse Staff');
-                                    isValid = false;
-                                }
-                            }
+                if (role === 'W') {
+                    const warehouseSelect = document.querySelector('#warehouseField select');
+                    if (warehouseSelect.value === '') {
+                        alert('Please select a warehouse for Warehouse Staff');
+                        isValid = false;
+                    }
+                }
 
-                            return isValid;
-                        }
+                return isValid;
+            }
 
-                        document.getElementById('roleSelect').addEventListener('change', updateFieldVisibility);
-                        document.addEventListener('DOMContentLoaded', updateFieldVisibility);
+            document.getElementById('roleSelect').addEventListener('change', updateFieldVisibility);
+            document.addEventListener('DOMContentLoaded', updateFieldVisibility);
         </script>
     </body>
 </html>

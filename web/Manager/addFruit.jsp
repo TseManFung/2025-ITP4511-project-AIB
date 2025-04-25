@@ -1,14 +1,13 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page import="java.util.Map" %>
 <!DOCTYPE html>
 <html>
 <head>
     <title>Add New Fruit</title>
-       <jsp:include page="/component/head.jsp" />
-        <title>Add fruit </title>
-       <style>
+    <jsp:include page="/component/head.jsp" />
+    <style>
         .content-bg {
             min-height: calc(100vh);
         }
@@ -27,19 +26,24 @@
             <div class="container mt-5">
                 <h1>Add New Fruit</h1>
 
-                <c:if test="${not empty error}">
-                    <div class="alert alert-danger">${error}</div>
-                </c:if>
-
                 <form action="fruitServlet" method="post">
                     <input type="hidden" name="action" value="add">
                     <div class="mb-3">
                         <label class="form-label">Source Country</label>
                         <select name="sourceCountryId" class="form-select" required>
                             <option value="">-- Select Country --</option>
-                            <c:forEach items="${countries}" var="country">
-                                <option value="${country.key}">${country.value} (ID: ${country.key})</option>
-                            </c:forEach>
+                            <%
+                                Map<Long, String> countries = (Map<Long, String>) request.getAttribute("countries");
+                                if (countries != null) {
+                                    for (Map.Entry<Long, String> country : countries.entrySet()) {
+                                        Long key = country.getKey();
+                                        String value = country.getValue();
+                            %>
+                                <option value="<%= key %>"><%= value %> (ID: <%= key %>)</option>
+                            <%
+                                    }
+                                }
+                            %>
                         </select>
                     </div>
                     <div class="mb-3">

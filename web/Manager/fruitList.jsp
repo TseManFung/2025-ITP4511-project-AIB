@@ -1,13 +1,13 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <%@ page isELIgnored="false" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page import="java.util.List" %>
+<%@ page import="AIB.Bean.FruitBean" %>
 <!DOCTYPE html>
 <html>
 <head>
     <title>Fruit List</title>
-       <jsp:include page="/component/head.jsp" />
-            <title>Fruit Lists </title>
+    <jsp:include page="/component/head.jsp" />
     <style>
         .content-bg {
             min-height: calc(100vh);
@@ -16,7 +16,7 @@
 </head>
 <body>
     <jsp:include page="/component/modal.jsp" />
-         <component:navbar/>
+    <component:navbar/>
     <!-- Header -->
     <div style="height: calc(0lvh + 128px); background-color: white;" id="header"></div>
 
@@ -29,9 +29,14 @@
                     <a href="fruitServlet?action=add" class="btn btn-success">Add New Fruit</a>
                 </div>
 
-                <c:if test="${not empty error}">
-                    <div class="alert alert-danger">${error}</div>
-                </c:if>
+                <%
+                    String error = (String) request.getAttribute("error");
+                    if (error != null && !error.isEmpty()) {
+                %>
+                    <div class="alert alert-danger"><%= error %></div>
+                <%
+                    }
+                %>
 
                 <table class="table table-striped">
                     <thead>
@@ -44,18 +49,26 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <c:forEach items="${fruits}" var="fruit">
+                        <%
+                            List<FruitBean> fruits = (List<FruitBean>) request.getAttribute("fruits");
+                            if (fruits != null) {
+                                for (FruitBean fruit : fruits) {
+                                    pageContext.setAttribute("fruit", fruit);
+                        %>
                             <tr>
-                                <td><%= ((AIB.Bean.FruitBean)pageContext.getAttribute("fruit")).getId() %></td>
-                                <td><%= ((AIB.Bean.FruitBean)pageContext.getAttribute("fruit")).getSourceCountryId() %></td>
-                                <td><%= ((AIB.Bean.FruitBean)pageContext.getAttribute("fruit")).getName() %></td>
-                                <td><%= ((AIB.Bean.FruitBean)pageContext.getAttribute("fruit")).getUnit() %></td>
+                                <td><%= fruit.getId() %></td>
+                                <td><%= fruit.getSourceCountryId() %></td>
+                                <td><%= fruit.getName() %></td>
+                                <td><%= fruit.getUnit() %></td>
                                 <td>
-                                    <a href="fruitServlet?action=edit&id=${fruit.id}" class="btn btn-warning btn-sm">Edit</a>
-                                    <a href="fruitServlet?action=delete&id=${fruit.id}" class="btn btn-danger btn-sm">Delete</a>
+                                    <a href="fruitServlet?action=edit&id=<%= fruit.getId() %>" class="btn btn-warning btn-sm">Edit</a>
+                                    <a href="fruitServlet?action=delete&id=<%= fruit.getId() %>" class="btn btn-danger btn-sm">Delete</a>
                                 </td>
                             </tr>
-                        </c:forEach>
+                        <%
+                                }
+                            }
+                        %>
                     </tbody>
                 </table>
             </div>

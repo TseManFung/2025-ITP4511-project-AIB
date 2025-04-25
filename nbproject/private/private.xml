@@ -3,12 +3,55 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/andyt/Downloads/2025-ITP4511-project-AIB/web/Shop/borrow.jsp</file>
-            <file>file:/C:/Users/andyt/Downloads/2025-ITP4511-project-AIB/src/java/AIB/servlet/BorrowRecordsDetailServlet.java</file>
-            <file>file:/C:/Users/andyt/Downloads/2025-ITP4511-project-AIB/src/java/AIB/servlet/ReserveServlet.java</file>
-            <file>file:/C:/Users/andyt/Downloads/2025-ITP4511-project-AIB/src/java/AIB/servlet/BorrowServlet.java</file>
-            <file>file:/C:/Users/andyt/Downloads/2025-ITP4511-project-AIB/web/WEB-INF/error/errorPage.jsp</file>
-            <file>file:/C:/Users/andyt/Downloads/2025-ITP4511-project-AIB/src/java/AIB/servlet/BorrowRecordsServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Manager/editFruit.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/CentralWarehouseReceiveServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Warehouse/warehouseDashboard.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Manager/managementDashboard.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/loginCheck.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/SkuReportServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/AddUserServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Manager/editUser.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Warehouse/acceptReserveList.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/tag/NavbarTag.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/Bean/FruitBean.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/AddStockServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/component/head.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/loginServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/db/ITP4511_DB.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/StockUpdateServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Manager/userList.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/DL/Borrow.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/DL/ReserveRecord.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/component/modal.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/SourceWarehouseSupplyServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/ReserveRecordServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/SourceWarehouseStockChangeServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/index.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Warehouse/sourceWarehouseSupply.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/WEB-INF/web.xml</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/Bean/WarehouseBean.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Warehouse/sourceWarehouseStockChange.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Manager/fruitList.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/WEB-INF/glassfish-web.xml</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/tag/ManagementNavbarTag.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Warehouse/skuReport.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Manager/addFruit.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/Bean/BorrowBean.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/BorrowRecordsServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/login.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/Bean/SkuReportBean.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Manager/addUser.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/BorrowRecordsDetailServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/Bean/ShopBean.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/UserListServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/AcceptReserveListServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Warehouse/addStock.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/loginError.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/Bean/StockBean.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/DL/BorrowRecord.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/web/Warehouse/centralWarehouseReceive.jsp</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/servlet/ReserveServlet.java</file>
+            <file>file:/C:/Users/ku123/Desktop/github/2025-ITP4511-project-AIB/src/java/AIB/Bean/WarehouseStockChangeBean.java</file>
         </group>
     </open-files>
 </project-private>

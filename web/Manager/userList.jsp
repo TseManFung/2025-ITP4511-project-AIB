@@ -1,7 +1,8 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <%@ page isELIgnored="false" %>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page import="java.util.List" %>
+<%@ page import="AIB.Bean.UserBean" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -14,7 +15,6 @@
         </style>
     </head>
     <body>
-
         <jsp:include page="/component/modal.jsp" />
         <component:navbar/>
 
@@ -31,9 +31,14 @@
                         <a href="addUserServlet" class="btn btn-success">Add New User</a>
                     </div>
 
-                    <c:if test="${not empty error}">
-                        <div class="alert alert-danger">${error}</div>
-                    </c:if>
+                    <%
+                        String error = (String) request.getAttribute("error");
+                        if (error != null && !error.isEmpty()) {
+                    %>
+                        <div class="alert alert-danger"><%= error %></div>
+                    <%
+                        }
+                    %>
 
                     <table class="table table-striped">
                         <thead>
@@ -46,35 +51,48 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <c:forEach items="${userList}" var="user">
+                            <%
+                                List<UserBean> userList = (List<UserBean>) request.getAttribute("userList");
+                                if (userList != null) {
+                                    for (UserBean user : userList) {
+                                        pageContext.setAttribute("user", user);
+                            %>
                                 <tr>
-                                    <td>${user.loginName}</td>
-                                    <td>${user.name}</td>
-                                    <td>${user.typeDescription}</td>
+                                    <td><%= user.getLoginName() != null ? user.getLoginName() : "" %></td>
+                                    <td><%= user.getName() != null ? user.getName() : "" %></td>
+                                    <td><%= user.getTypeDescription() != null ? user.getTypeDescription() : "Unknown" %></td>
                                     <td>
-                                        <c:choose>
-                                            <c:when test="${user.type.toString() == 'B' && user.shopId != 0}">
-                                                Shop: ${user.shopId}    
-                                            </c:when>
-                                            <c:when test="${user.type.toString() == 'W' && user.warehouseId != 0}">
-                                                Warehouse: ${user.warehouseId}
-                                            </c:when>
-                                            <c:otherwise>
-                                                -
-                                            </c:otherwise>
-                                        </c:choose>
+                                        <%
+                                            Character userType = user.getType();
+                                            String typeStr = userType != null ? userType.toString() : "";
+                                            if ("B".equals(typeStr) && user.getShopId() != null && user.getShopId() != 0) {
+                                                out.print("Shop: " + user.getShopId());
+                                            } else if ("W".equals(typeStr) && user.getWarehouseId() != null && user.getWarehouseId() != 0) {
+                                                out.print("Warehouse: " + user.getWarehouseId());
+                                            } else {
+                                                out.print("-");
+                                            }
+                                        %>
                                     </td>
                                     <td>
-                                        <c:if test="${sessionScope.userType == 'S'}">
-                                            <a href="editUserServlet?loginName=${user.loginName}" class="btn btn-warning btn-sm">Edit</a>
+                                        <%
+                                            String sessionUserType = (String) session.getAttribute("userType");
+                                            if ("S".equals(sessionUserType)) {
+                                        %>
+                                            <a href="editUserServlet?loginName=<%= user.getLoginName() != null ? user.getLoginName() : "" %>" class="btn btn-warning btn-sm">Edit</a>
                                             <form action="deleteUserServlet" method="POST" style="display:inline;">
-                                                <input type="hidden" name="loginName" value="${user.loginName}">
+                                                <input type="hidden" name="loginName" value="<%= user.getLoginName() != null ? user.getLoginName() : "" %>">
                                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                             </form>
-                                        </c:if>
+                                        <%
+                                            }
+                                        %>
                                     </td>
                                 </tr>
-                            </c:forEach>
+                            <%
+                                    }
+                                }
+                            %>
                         </tbody>
                     </table>
                 </div>
@@ -88,9 +106,7 @@
         </div>
         <!-- /GoToTop -->
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-                integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>      
     </body>
 </html>

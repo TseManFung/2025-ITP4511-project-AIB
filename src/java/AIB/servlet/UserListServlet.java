@@ -17,7 +17,6 @@ public class UserListServlet extends HttpServlet {
 
     @Override
     public void init() {
-        // 初始化数据库连接（复用现有配置）
         String dbUser = getServletContext().getInitParameter("dbUser");
         String dbPassword = getServletContext().getInitParameter("dbPassword");
         String dbUrl = getServletContext().getInitParameter("dbUrl");
@@ -32,10 +31,11 @@ public class UserListServlet extends HttpServlet {
             response.sendRedirect("login.jsp?error=access_denied");
             return;
         }
+
         List<UserBean> userList = new ArrayList<>();
+        String error = null;
 
         try (Connection conn = db.getConnection(); Statement stmt = conn.createStatement()) {
-
             String sql = "SELECT * FROM user WHERE type != 'D'";
             ResultSet rs = stmt.executeQuery(sql);
 
@@ -43,19 +43,24 @@ public class UserListServlet extends HttpServlet {
                 UserBean user = new UserBean();
                 user.setLoginName(rs.getString("loginName"));
                 user.setName(rs.getString("name"));
-                user.setType(rs.getString("type").charAt(0));
+                String typeStr = rs.getString("type");
+                // Validate type
+                if (typeStr != null && !typeStr.isEmpty()) {
+                    user.setType(typeStr.charAt(0));
+                } 
                 user.setWarehouseId(rs.getLong("warehouseid"));
                 user.setShopId(rs.getLong("shopid"));
                 userList.add(user);
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", "Database select error");
+            error = "Database error: " + e.getMessage();
         }
 
-        // 将用户列表传递到JSP
         request.setAttribute("userList", userList);
+        if (error != null) {
+            request.setAttribute("error", error);
+        }
         request.getRequestDispatcher("/Manager/userList.jsp").forward(request, response);
     }
 }
