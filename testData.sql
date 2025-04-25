@@ -97,12 +97,32 @@ INSERT INTO reserve (id, Shopid, reserveDT, state) VALUES
 (1, 3001, DATE_ADD(NOW(), INTERVAL 7 DAY), 'A');  -- 纽约Shop A预订
 
 INSERT INTO reserveDetail (reserveid, fruitid, num) VALUES
-(1, 3, 100);  -- 预订100箱蓝莓
+(1, 6, 100),
+(1, 5, 100),
+(1, 4, 100),
+(1, 3, 100),
+(1, 2, 100),
+(1, 1, 100);
 
 -- 跨国运输记录（日本→美国）
 INSERT INTO warehouseStockChange (id, sourceWarehouseid, destinationWarehouseid, deliveryStartTime, deliveryEndTime, state) VALUES
 (1, 101, 202, '2024-01-01 08:00:00', '2024-01-05 12:00:00', 'F');
 
+
 INSERT INTO warehouseStockChangeDetail (warehouseStockChangeid, fruitid, num) VALUES
 (1, 1, 500);  -- 运输500kg草莓
+
+-- 跨国运输记录（香港→美国）
+INSERT INTO warehouseStockChange (id, sourceWarehouseid, destinationWarehouseid, deliveryStartTime, deliveryEndTime, state) VALUES
+(2, 301, 202, '2024-01-03 08:00:00', '2024-01-05 12:00:00', 'F');
+INSERT INTO warehouseStockChangeDetail (warehouseStockChangeid, fruitid, num) VALUES
+(2, 5, 100),   -- 运输100箱芒果
+(2, 6, 50);    -- 运输50个火龙果
+
+-- 同國运输记录（美国）
+INSERT INTO warehouseStockChange (id, sourceWarehouseid, destinationWarehouseid, deliveryStartTime, deliveryEndTime, state) VALUES
+(3, 201, 202, '2024-01-05 08:00:00', '2024-01-05 18:00:00', 'F');
+INSERT INTO warehouseStockChangeDetail (warehouseStockChangeid, fruitid, num) VALUES
+(3, 3, 200),   -- 运输200箱蓝莓
+(3, 4, 100);   -- 运输100kg牛油果
 */
