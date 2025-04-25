@@ -1,7 +1,8 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <%@ page isELIgnored="false" %>
+<%@ page import="java.util.List" %>
+<%@ page import="AIB.Bean.WarehouseStockChangeBean" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,25 +25,43 @@
             <div class="container mt-5">
                 <h1>Stock Transfer</h1>
 
-                <c:if test="${not empty error}">
-                    <div class="alert alert-danger">${error}</div>
-                </c:if>
-
                 <form action="sourceWarehouseStockChangeServlet" method="POST">
                     <div class="mb-3">
                         <label for="destinationWarehouseId" class="form-label">Destination Warehouse</label>
                         <select class="form-control" id="destinationWarehouseId" name="destinationWarehouseId" required>
-                            <c:forEach items="${centralWarehouses}" var="warehouse">
-                                <option value="${warehouse.split(':')[0]}">${warehouse.split(':')[1]}</option>
-                            </c:forEach>
+                            <%
+                                List<String> centralWarehouses = (List<String>) request.getAttribute("centralWarehouses");
+                                if (centralWarehouses != null) {
+                                    for (int i = 0; i < centralWarehouses.size(); i++) {
+                                        String warehouse = centralWarehouses.get(i);
+                                        String[] parts = warehouse.split(":");
+                                        String id = parts[0];
+                                        String name = parts[1];
+                            %>
+                                <option value="<%= id %>"><%= name %></option>
+                            <%
+                                    }
+                                }
+                            %>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label for="fruitId" class="form-label">Fruit</label>
                         <select class="form-control" id="fruitId" name="fruitId" required>
-                            <c:forEach items="${fruits}" var="fruit">
-                                <option value="${fruit.split(':')[0]}">${fruit.split(':')[1]}</option>
-                            </c:forEach>
+                            <%
+                                List<String> fruits = (List<String>) request.getAttribute("fruits");
+                                if (fruits != null) {
+                                    for (int i = 0; i < fruits.size(); i++) {
+                                        String fruit = fruits.get(i);
+                                        String[] parts = fruit.split(":");
+                                        String id = parts[0];
+                                        String name = parts[1];
+                            %>
+                                <option value="<%= id %>"><%= name %></option>
+                            <%
+                                    }
+                                }
+                            %>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -66,29 +85,53 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <c:forEach items="${transfers}" var="transfer">
+                        <%
+                            List<WarehouseStockChangeBean> transfers = (List<WarehouseStockChangeBean>) request.getAttribute("transfers");
+                            if (transfers != null) {
+                                for (int i = 0; i < transfers.size(); i++) {
+                                    WarehouseStockChangeBean transfer = transfers.get(i);
+                        %>
                             <tr>
-                                <td>${transfer.id}</td>
-                                <td>${transfer.deliveryStartTime}</td>
-                                <td>${transfer.deliveryEndTime}</td>
+                                <td><%= transfer.getId() %></td>
+                                <td><%= transfer.getDeliveryStartTime() %></td>
+                                <td><%= transfer.getDeliveryEndTime() %></td>
                                 <td>
-                                    <c:forEach items="${centralWarehouses}" var="warehouse">
-                                        <c:if test="${warehouse.split(':')[0] == transfer.destinationWarehouseId}">
-                                            ${warehouse.split(':')[1]}
-                                        </c:if>
-                                    </c:forEach>
+                                    <%
+                                        if (centralWarehouses != null) {
+                                            for (int j = 0; j < centralWarehouses.size(); j++) {
+                                                String warehouse = centralWarehouses.get(j);
+                                                String[] parts = warehouse.split(":");
+                                                String id = parts[0];
+                                                if (id.equals(String.valueOf(transfer.getDestinationWarehouseId()))) {
+                                                    out.print(parts[1]);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    %>
                                 </td>
                                 <td>
-                                    <c:forEach items="${fruits}" var="fruit">
-                                        <c:if test="${fruit.split(':')[0] == transfer.fruitId}">
-                                            ${fruit.split(':')[1]}
-                                        </c:if>
-                                    </c:forEach>
+                                    <%
+                                        if (fruits != null) {
+                                            for (int j = 0; j < fruits.size(); j++) {
+                                                String fruit = fruits.get(j);
+                                                String[] parts = fruit.split(":");
+                                                String id = parts[0];
+                                                if (id.equals(String.valueOf(transfer.getFruitId()))) {
+                                                    out.print(parts[1]);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    %>
                                 </td>
-                                <td>${transfer.num}</td>
-                                <td>${transfer.state}</td>
+                                <td><%= transfer.getNum() %></td>
+                                <td><%= transfer.getState() %></td>
                             </tr>
-                        </c:forEach>
+                        <%
+                                }
+                            }
+                        %>
                     </tbody>
                 </table>
             </div>

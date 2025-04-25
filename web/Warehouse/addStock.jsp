@@ -1,7 +1,8 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <%@ page isELIgnored="false" %>
+<%@ page import="java.util.List" %>
+<%@ page import="AIB.Bean.StockBean" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -24,21 +25,28 @@
                 <div class="container mt-5">
                     <h1>Add Stock</h1>
 
-                    <c:if test="${param.success == 'true'}">
+                    <% if ("true".equals(request.getParameter("success"))) { %>
                         <div class="alert alert-success">Stock updated successfully!</div>
-                    </c:if>
-                    <c:if test="${not empty param.error}">
+                    <% } %>
+                    <%
+                        String error = request.getParameter("error");
+                        if (error != null && !error.isEmpty()) {
+                    %>
                         <div class="alert alert-danger">
-                            <c:choose>
-                                <c:when test="${param.error == 'invalid'}">Invalid quantity entered. Please enter non-negative numbers.</c:when>
-                                <c:when test="${param.error == 'database'}">Database error occurred. Please try again later.</c:when>
-                                <c:otherwise>Unknown error occurred.</c:otherwise>
-                            </c:choose>
+                            <%
+                                if ("invalid".equals(error)) {
+                                    out.print("Invalid quantity entered. Please enter non-negative numbers.");
+                                } else if ("database".equals(error)) {
+                                    out.print("Database error occurred. Please try again later.");
+                                } else {
+                                    out.print("Unknown error occurred.");
+                                }
+                            %>
                         </div>
-                    </c:if>
-                    <c:if test="${not empty errorMessage}">
-                        <div class="alert alert-danger">${errorMessage}</div>
-                    </c:if>
+                    <% } %>
+                    <% if (request.getAttribute("errorMessage") != null) { %>
+                        <div class="alert alert-danger"><%= request.getAttribute("errorMessage") %></div>
+                    <% } %>
 
                     <form action="${pageContext.request.contextPath}/AddStockServlet" method="POST">
                         <table class="table table-striped">
@@ -51,19 +59,28 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <c:if test="${empty stockList}">
-                                <p>Stock list is empty!</p>
-                            </c:if>
-                            <c:forEach items="${stockList}" var="stock">
-                                <tr>
-                                    <td>${stock.fruitId}</td>
-                                    <td>${stock.fruitName}</td>
-                                    <td>${stock.currentStock}</td>
-                                    <td>
-                                        <input type="number" class="form-control" name="fruit_${stock.fruitId}" min="0" value="0" required>
-                                    </td>
-                                </tr>
-                            </c:forEach>
+                                <%
+                                    List<StockBean> stockList = (List<StockBean>) request.getAttribute("stockList");
+                                    if (stockList == null || stockList.isEmpty()) {
+                                %>
+                                    <tr><td colspan="4">Stock list is empty!</td></tr>
+                                <%
+                                    } else {
+                                        for (int i = 0; i < stockList.size(); i++) {
+                                            StockBean stock = stockList.get(i);
+                                %>
+                                    <tr>
+                                        <td><%= stock.getFruitId() %></td>
+                                        <td><%= stock.getFruitName() %></td>
+                                        <td><%= stock.getCurrentStock() %></td>
+                                        <td>
+                                            <input type="number" class="form-control" name="fruit_<%= stock.getFruitId() %>" min="0" value="0" required>
+                                        </td>
+                                    </tr>
+                                <%
+                                        }
+                                    }
+                                %>
                             </tbody>
                         </table>
                         <button type="submit" class="btn btn-primary">Update Stock</button>

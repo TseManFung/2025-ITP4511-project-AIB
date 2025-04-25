@@ -1,7 +1,8 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <%@ page isELIgnored="false" %>
+<%@ page import="java.util.List" %>
+<%@ page import="AIB.Bean.ReserveBean" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,10 +25,6 @@
             <div class="container mt-5">
                 <h1>Reserve Approval</h1>
 
-                <c:if test="${not empty error}">
-                    <div class="alert alert-danger">${error}</div>
-                </c:if>
-
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -40,39 +37,65 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <c:forEach items="${reserves}" var="reserve">
+                        <%
+                            List<ReserveBean> reserves = (List<ReserveBean>) request.getAttribute("reserves");
+                            List<String> shops = (List<String>) request.getAttribute("shops");
+                            List<String> fruits = (List<String>) request.getAttribute("fruits");
+                            if (reserves != null) {
+                                for (int i = 0; i < reserves.size(); i++) {
+                                    ReserveBean reserve = reserves.get(i);
+                        %>
                             <tr>
-                                <td>${reserve.id}</td>
+                                <td><%= reserve.getId() %></td>
                                 <td>
-                                    <c:forEach items="${shops}" var="shop">
-                                        <c:if test="${shop.split(':')[0] == reserve.shopId}">
-                                            ${shop.split(':')[1]}
-                                        </c:if>
-                                    </c:forEach>
+                                    <%
+                                        if (shops != null) {
+                                            for (int j = 0; j < shops.size(); j++) {
+                                                String shop = shops.get(j);
+                                                String[] parts = shop.split(":");
+                                                String id = parts[0];
+                                                if (id.equals(String.valueOf(reserve.getShopId()))) {
+                                                    out.print(parts[1]);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    %>
                                 </td>
-                                <td>${reserve.reserveDT}</td>
+                                <td><%= reserve.getReserveDT() %></td>
                                 <td>
-                                    <c:forEach items="${fruits}" var="fruit">
-                                        <c:if test="${fruit.split(':')[0] == reserve.fruitId}">
-                                            ${fruit.split(':')[1]}
-                                        </c:if>
-                                    </c:forEach>
+                                    <%
+                                        if (fruits != null) {
+                                            for (int j = 0; j < fruits.size(); j++) {
+                                                String fruit = fruits.get(j);
+                                                String[] parts = fruit.split(":");
+                                                String id = parts[0];
+                                                if (id.equals(String.valueOf(reserve.getFruitId()))) {
+                                                    out.print(parts[1]);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    %>
                                 </td>
-                                <td>${reserve.num}</td>
+                                <td><%= reserve.getNum() %></td>
                                 <td>
                                     <form action="acceptReserveListServlet" method="POST" style="display:inline;">
-                                        <input type="hidden" name="reserveId" value="${reserve.id}">
+                                        <input type="hidden" name="reserveId" value="<%= reserve.getId() %>">
                                         <input type="hidden" name="action" value="approve">
                                         <button type="submit" class="btn btn-success btn-sm">Approve</button>
                                     </form>
                                     <form action="acceptReserveListServlet" method="POST" style="display:inline;">
-                                        <input type="hidden" name="reserveId" value="${reserve.id}">
+                                        <input type="hidden" name="reserveId" value="<%= reserve.getId() %>">
                                         <input type="hidden" name="action" value="reject">
                                         <button type="submit" class="btn btn-danger btn-sm">Reject</button>
                                     </form>
                                 </td>
                             </tr>
-                        </c:forEach>
+                        <%
+                                }
+                            }
+                        %>
                     </tbody>
                 </table>
             </div>

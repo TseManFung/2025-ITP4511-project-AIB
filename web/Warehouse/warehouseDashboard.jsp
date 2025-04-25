@@ -36,10 +36,7 @@
             <div class="container dashboard-container">
                 <h1 class="mb-4">WareHouse Dashboard</h1>
 
-                <c:if test="${not empty error}">
-                    <div class="alert alert-danger">${error}</div>
-                </c:if>
-
+          
               
             </div>
         </div>
