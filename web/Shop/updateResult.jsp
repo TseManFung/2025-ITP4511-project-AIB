@@ -1,13 +1,10 @@
-<%-- 
-    Document   : updateResult
-    Created on : 2025年4月23日, 下午6:56:52
-    Author     : andyt
---%>
-
-<%@page import="java.util.Map"%>
+<%-- Document : updateResult Created on : 2025年4月23日, 下午6:56:52 Author : andyt --%>
 <%@ page contentType="text/html; charset=UTF-8" %>
-<%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
+<%@ page isELIgnored="false" %>
+<%@ page import="AIB.Bean.ShopBean" %>
+<%@ page import="AIB.Bean.FruitBean" %>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -17,7 +14,7 @@
     <body>
         <jsp:include page="/component/modal.jsp" />
 
-        <component:navbar/>
+        <component:navbar />
 
         <!-- header -->
         <div style="height: calc(0lvh + 128px)" id="header"></div>
@@ -26,7 +23,18 @@
         <!-- content -->
         <div class="d-flex position-relative content-bg justify-content-center">
             <div class="container">
+
                 <h2 class="mb-4">Stock Update Result</h2>
+
+                <%-- 顯示錯誤訊息 --%>
+                <%
+                    String errorMessage = (String) request.getAttribute("error");
+                    if (errorMessage != null) {
+                %>
+                <div class="alert alert-danger" role="alert">
+                    <%= errorMessage %>
+                </div>
+                <% } %>
 
                 <table class="table table-bordered">
                     <thead class="thead-dark">
@@ -40,23 +48,16 @@
                     </thead>
                     <tbody>
                         <%
-                            Map<Long, Map<String, Object>> result = (Map<Long, Map<String, Object>>) request.getAttribute("result");
-
-                            if (result != null) {
-                                for (Map.Entry<Long, Map<String, Object>> entry : result.entrySet()) {
-                                    Long fruitId = entry.getKey();
-                                    Map<String, Object> fruitData = entry.getValue();
-                                    String fruitName = (String) fruitData.get("name");
-                                    int originalQty = (int) fruitData.get("originalNum");
-                                    int newQty = (int) fruitData.get("updatedNum");
-                                    int consumed = (int) fruitData.get("consumeNum");
+                            ShopBean shop = (ShopBean) request.getAttribute("result");
+                            if (shop != null && shop.getFruits() != null && !shop.getFruits().isEmpty()) {
+                                for (FruitBean fruit : shop.getFruits()) {
                         %>
                         <tr>
-                            <td><%= fruitId %></td>
-                            <td><%= fruitName %></td>
-                            <td><%= originalQty %></td>
-                            <td><%= newQty %></td>
-                            <td><%= consumed %></td>
+                            <td><%= fruit.getId() %></td>
+                            <td><%= fruit.getName() %></td>
+                            <td><%= fruit.getOriginalNum() %></td>
+                            <td><%= fruit.getUpdatedNum() %></td>
+                            <td><%= fruit.getConsumeNum() %></td>
                         </tr>
                         <%
                                 }
@@ -72,7 +73,7 @@
                 </table>
 
                 <a href="StockUpdateServlet" class="btn btn-secondary">Back to Update</a>
-            </div> 
+            </div>
         </div>
         <!-- /content -->
 
@@ -84,7 +85,7 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>      
+                crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
     </body>
 </html>

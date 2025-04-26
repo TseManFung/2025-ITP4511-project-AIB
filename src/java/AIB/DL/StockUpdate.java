@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import AIB.Bean.FruitBean;
+import AIB.Bean.ShopBean;
 import AIB.algorithm.SnowflakeSingleton;
 import AIB.db.ITP4511_DB;
 
@@ -29,88 +31,84 @@ public class StockUpdate implements Serializable {
         this.db = db;
     }
 
-    public Map<Long, Map<String, Object>> getShopStock(long shopId) throws SQLException {
-        Map<Long, Map<String, Object>> stock = new HashMap<>();
-        String sql = "SELECT f.id AS fruitid, f.name, ss.num " +
-                     "FROM shopStock ss " +
-                     "JOIN fruit f ON ss.fruitid = f.id " +
-                     "WHERE ss.shopid = ?";
+    public ShopBean getShopStock(long shopId) throws SQLException {
+        ShopBean shop = new ShopBean();
+        shop.setShopid(shopId);
+
+        String sql = "SELECT f.id AS fruitid, f.name, f.unit, ss.num " +
+                "FROM shopStock ss " +
+                "JOIN fruit f ON ss.fruitid = f.id " +
+                "WHERE ss.shopid = ?";
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, shopId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Map<String, Object> fruitData = new HashMap<>();
-                fruitData.put("name", rs.getString("name"));
-                fruitData.put("num", rs.getInt("num"));
-                stock.put(rs.getLong("fruitid"), fruitData);
+                FruitBean fruit = new FruitBean();
+                fruit.setId(rs.getLong("fruitid"));
+                fruit.setName(rs.getString("name"));
+                fruit.setUnit(rs.getString("unit"));
+                fruit.setOriginalNum(rs.getInt("num")); // 原始數量
+                shop.getFruits().add(fruit);
             }
         }
-        return stock;
+        return shop;
     }
 
-    public Map<Long, Map<String, Object>> getShopStock(long shopId,List<Long> fruitId) throws SQLException {
-        Map<Long, Map<String, Object>> stock = new HashMap<>();
+    public ShopBean getShopStock(long shopId, List<Long> fruitIds) throws SQLException {
+        ShopBean shop = new ShopBean();
+        shop.setShopid(shopId);
+
         String sql = "SELECT f.id AS fruitid, f.name, ss.num " +
-                     "FROM shopStock ss " +
-                     "JOIN fruit f ON ss.fruitid = f.id " +
-                     "WHERE ss.shopid = ? AND ss.fruitid IN (";
-        for (int i = 0; i < fruitId.size(); i++) {
-            sql += "?";
-            if (i < fruitId.size() - 1) {
-                sql += ",";
-            }
-        }
-        sql += ")";
+                "FROM shopStock ss " +
+                "JOIN fruit f ON ss.fruitid = f.id " +
+                "WHERE ss.shopid = ? AND ss.fruitid IN (" +
+                String.join(",", fruitIds.stream().map(id -> "?").toArray(String[]::new)) + ")";
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, shopId);
-            for (int i = 0; i < fruitId.size(); i++) {
-                stmt.setLong(i + 2, fruitId.get(i));
+            for (int i = 0; i < fruitIds.size(); i++) {
+                stmt.setLong(i + 2, fruitIds.get(i));
             }
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Map<String, Object> fruitData = new HashMap<>();
-                fruitData.put("name", rs.getString("name"));
-                fruitData.put("originalNum", rs.getInt("num"));
-                stock.put(rs.getLong("fruitid"), fruitData);
+                FruitBean fruit = new FruitBean();
+                fruit.setId(rs.getLong("fruitid"));
+                fruit.setName(rs.getString("name"));
+                fruit.setOriginalNum(rs.getInt("num")); // 原始數量
+                shop.getFruits().add(fruit);
             }
         }
-        return stock;
+        return shop;
     }
 
-    public Map<Long, Map<String, Object>> updateStock(long shopId, Map<Long, Integer> updates) throws SQLException {
+    public ShopBean updateStock(long shopId, Map<Long, Integer> updates) throws SQLException {
         Connection conn = null;
+        ShopBean shop = getShopStock(shopId); // 獲取當前商店的庫存
         try {
             conn = db.getConnection();
             conn.setAutoCommit(false);
 
-            // Get original values
-            Map<Long, Map<String, Object>> shopStock = getShopStock(shopId, updates.keySet().stream().toList());
-
-            // Update shopStock
             String updateSql = "UPDATE shopStock SET num = ? WHERE shopid = ? AND fruitid = ?";
             try (PreparedStatement stmt = conn.prepareStatement(updateSql)) {
-                for (Map.Entry<Long, Integer> entry : updates.entrySet()) {
-                    Map<String, Object> fruitData = shopStock.get(entry.getKey());
-                    if (fruitData == null) {
-                        throw new SQLException("Fruit not found in shop stock");
-                    }
-                    int consumeNum = entry.getValue();
-                    int newValue = (int) fruitData.get("originalNum") - consumeNum;
-                    if (newValue < 0) {
-                        throw new SQLException("Negative stock not allowed");
-                    }
-                    fruitData.put("updatedNum", newValue);
-                    fruitData.put("consumeNum", consumeNum);
+                for (FruitBean fruit : shop.getFruits()) {
+                    if (updates.containsKey(fruit.getId())) {
+                        int consumeNum = updates.get(fruit.getId());
+                        int newValue = fruit.getOriginalNum() - consumeNum;
+                        if (newValue < 0) {
+                            throw new SQLException("Negative stock not allowed for fruit ID: " + fruit.getId());
+                        }
+                        fruit.setConsumeNum(consumeNum);
+                        fruit.setUpdatedNum(newValue);
 
-                    stmt.setInt(1, newValue);
-                    stmt.setLong(2, shopId);
-                    stmt.setLong(3, entry.getKey());
-                    stmt.addBatch();
+                        stmt.setInt(1, newValue);
+                        stmt.setLong(2, shopId);
+                        stmt.setLong(3, fruit.getId());
+                        stmt.addBatch();
+                    }
                 }
                 stmt.executeBatch();
             }
 
-            // Create consume record
+            // 創建消耗記錄
             long consumeId = SnowflakeSingleton.getInstance().nextId();
             String consumeSql = "INSERT INTO consume (id, shopid) VALUES (?, ?)";
             try (PreparedStatement stmt = conn.prepareStatement(consumeSql)) {
@@ -119,20 +117,22 @@ public class StockUpdate implements Serializable {
                 stmt.executeUpdate();
             }
 
-            // Insert consume details
+            // 插入消耗詳細記錄
             String detailSql = "INSERT INTO consumeDetail (consumeid, fruitid, num) VALUES (?, ?, ?)";
             try (PreparedStatement stmt = conn.prepareStatement(detailSql)) {
-                for (Map.Entry<Long, Integer> entry : updates.entrySet()) {
-                    stmt.setLong(1, consumeId);
-                    stmt.setLong(2, entry.getKey());
-                    stmt.setInt(3, entry.getValue());
-                    stmt.addBatch();
+                for (FruitBean fruit : shop.getFruits()) {
+                    if (fruit.getConsumeNum() > 0) {
+                        stmt.setLong(1, consumeId);
+                        stmt.setLong(2, fruit.getId());
+                        stmt.setInt(3, fruit.getConsumeNum());
+                        stmt.addBatch();
+                    }
                 }
                 stmt.executeBatch();
             }
 
             conn.commit();
-            return shopStock;
+            return shop;
         } catch (SQLException e) {
             if (conn != null) {
                 conn.rollback();

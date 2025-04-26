@@ -6,6 +6,9 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <%@ page isELIgnored="false" %>
+<%@ page import="AIB.Bean.ShopBean" %>
+<%@ page import="AIB.Bean.FruitBean" %>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -26,22 +29,12 @@
             <div class="container">
                 <h2 class="mb-4">Update Stock Level</h2>
 
-                <%-- 宣告區塊，定義方法 --%>
-                <%!
-                    public String getErrorMessage(String error) {
-                        if ("invalid".equals(error)) {
-                            return "Invalid input or insufficient stock";
-                        }
-                        return null;
-                    }
-                %>
-
                 <%-- 顯示錯誤訊息 --%>
                 <%
-                    String errorMessage = getErrorMessage(request.getParameter("error"));
+                    String errorMessage = request.getParameter("error");
+                    if ("invalid".equals(errorMessage)) {
                 %>
-                <% if (errorMessage != null) {%>
-                <div class="alert alert-danger"><%= errorMessage%></div>
+                <div class="alert alert-danger">Invalid input or insufficient stock</div>
                 <% } %>
 
                 <form method="post">
@@ -56,22 +49,17 @@
                         </thead>
                         <tbody>
                             <%
-                                java.util.Map<Long, java.util.Map<String, Object>> stock =
-                                    (java.util.Map<Long, java.util.Map<String, Object>>) request.getAttribute("stock");
-                                if (stock != null && !stock.isEmpty()) {
-                                    for (java.util.Map.Entry<Long, java.util.Map<String, Object>> entry : stock.entrySet()) {
-                                        Long fruitId = entry.getKey();
-                                        java.util.Map<String, Object> fruitData = entry.getValue();
-                                        String name = (String) fruitData.get("name");
-                                        int num = (int) fruitData.get("num");
+                                ShopBean shop = (ShopBean) request.getAttribute("stock");
+                                if (shop != null && shop.getFruits() != null && !shop.getFruits().isEmpty()) {
+                                    for (FruitBean fruit : shop.getFruits()) {
                             %>
                             <tr>
-                                <td><%= fruitId %></td>
-                                <td><%= name %></td>
-                                <td><%= num %></td>
+                                <td><%= fruit.getId() %></td>
+                                <td><%= fruit.getName() %></td>
+                                <td><%= fruit.getOriginalNum() %></td>
                                 <td>
-                                    <input type="number" name="fruit_<%= fruitId %>" value="0"
-                                           class="form-control" max="<%= num %>" min="0"
+                                    <input type="number" name="fruit_<%= fruit.getId() %>" value="0"
+                                           class="form-control" max="<%= fruit.getOriginalNum() %>" min="0"
                                            required oninput="validateQuantity(this)">
                                 </td>
                             </tr>

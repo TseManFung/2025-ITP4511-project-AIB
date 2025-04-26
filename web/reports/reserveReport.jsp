@@ -1,8 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page isELIgnored="false" %>
+<%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <%@ page import="java.util.List" %>
 <%@ page import="AIB.Bean.ReserveReportBean" %>
-
+<%@ page import="java.text.SimpleDateFormat" %>
+<%!
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+%>
 <!DOCTYPE html>
 <html>
     <head>
@@ -31,22 +35,22 @@
                     <th>Latest Reservation</th>
                 </tr>
             </thead>
-<jsp:useBean id="report" scope="request" type="java.util.List<AIB.Bean.ReserveReportBean>" />
+<jsp:useBean id="reserveReport" scope="request" type="List<ReserveReportBean>" />
 
-            <tbody>
-                <% 
-                    for (ReserveReportBean item : report) { 
-                %>
-                    <tr>
-                        <td><%= item.getLocationName() %></td>
-                        <td><%= item.getFruitName() %></td>
-                        <td><%= item.getTotalReserved() %></td>
-                        <td><%= item.getLatestReserveDate() %></td>
-                    </tr>
-                <% 
-                    } 
-                %>
-            </tbody>
+    <tbody>
+        <% 
+            for (ReserveReportBean item : reserveReport) { 
+        %>
+            <tr>
+                <td><%= item.getLocationName() %></td>
+                <td><%= item.getFruitName() %></td>
+                <td><%= item.getTotalReserved() %></td>
+                <td><%= item.getLatestReserveDate() != null ? dateFormat.format(item.getLatestReserveDate()) : "N/A" %></td>
+            </tr>
+        <% 
+            } 
+        %>
+    </tbody>
         </table>
        </div> 
         </div>

@@ -1,4 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page isELIgnored="false" %>
+<%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -154,10 +156,15 @@
                     $.getJSON('${pageContext.request.contextPath}/locations', 
                         { type: locationType }, 
                         function(data) {
-                            $('#locationSelect').empty().append(
-                                data.map(item => new Option(item.name, item.id))
-                                .prop('disabled', false)
-                                .trigger('change');
+                                                        $('#locationSelect').empty(); // 清空選擇器
+                            if (data.length > 0) {
+                                data.forEach(item => {
+                                    $('#locationSelect').append(new Option(item.name, item.id));
+                                });
+                                $('#locationSelect').prop('disabled', false).trigger('change');
+                            } else {
+                                $('#locationSelect').append(new Option("No locations available", "")).prop('disabled', true);
+                            }
                         }
                     );
                 }
@@ -173,5 +180,3 @@
 </body>
 </html>
 
-
-    <!-- SVG Icons -->

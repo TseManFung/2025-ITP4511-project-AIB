@@ -1,6 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@page import="AIB.Bean.ConsumptionBean" %>
 <%@ page import="java.util.List" %>
+<%@ page isELIgnored="false" %>
+<%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
 <jsp:useBean id="consumptionReport" scope="request" type="java.util.List<AIB.Bean.ConsumptionBean>" />
 <!DOCTYPE html>
 <html>

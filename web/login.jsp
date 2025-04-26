@@ -51,7 +51,7 @@
                 </div>
                 <div class="ipt-box">
                     <input type="password" id="password" name="password" placeholder="Password" autocomplete="current-password" required>
-                    <i class="fa-regular fa-eye-slash password-toggle"></i>
+                    <i class="fa-regular fa-eye-slash password-toggle" for="password"></i>
                     <div class="beam"></div>
                 </div>
                 <button type="submit" class="btn-login">Login</button>

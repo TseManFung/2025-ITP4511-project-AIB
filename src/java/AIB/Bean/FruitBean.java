@@ -9,6 +9,33 @@ public class FruitBean implements Serializable {
     private String name;
     private String unit;
     private int quantity;
+    private int originalNum; // 原始庫存數量
+    private int updatedNum; // 更新後的庫存數量
+    private int consumeNum; // 消耗的數量
+
+    public int getOriginalNum() {
+        return this.originalNum;
+    }
+
+    public void setOriginalNum(int originalNum) {
+        this.originalNum = originalNum;
+    }
+
+    public int getUpdatedNum() {
+        return this.updatedNum;
+    }
+
+    public void setUpdatedNum(int updatedNum) {
+        this.updatedNum = updatedNum;
+    }
+
+    public int getConsumeNum() {
+        return this.consumeNum;
+    }
+
+    public void setConsumeNum(int consumeNum) {
+        this.consumeNum = consumeNum;
+    }
 
     public int getQuantity() {
         return this.quantity;

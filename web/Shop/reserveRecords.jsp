@@ -1,9 +1,9 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="component" uri="/WEB-INF/tlds/component" %>
-<%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.List" %>
 <%@ page import="AIB.Bean.ReserveBean" %>
+<%@ page import="java.text.SimpleDateFormat" %>
 <%!
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 %>

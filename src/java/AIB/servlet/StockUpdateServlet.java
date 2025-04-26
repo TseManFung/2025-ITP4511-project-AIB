@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import AIB.Bean.ShopBean;
 import AIB.DL.StockUpdate;
 import AIB.db.ITP4511_DB;
 import jakarta.servlet.ServletException;
@@ -86,7 +87,7 @@ public class StockUpdateServlet extends HttpServlet {
                 return;
             }
 
-            Map<Long, Map<String, Object>> stock = stockBean.getShopStock(shopId);
+            ShopBean stock = stockBean.getShopStock(shopId);
             request.setAttribute("stock", stock);
             request.getRequestDispatcher("/Shop/updateStock.jsp").forward(request, response);
         } catch (SQLException e) {
@@ -121,8 +122,13 @@ public class StockUpdateServlet extends HttpServlet {
                     }
                 }
             }
+            if (updates.isEmpty()) {
+                request.setAttribute("error", "No valid updates provided. All quantities are zero.");
+                request.getRequestDispatcher("/Shop/updateStock.jsp").forward(request, response);
+                return;
+            }
 
-            Map<Long, Map<String, Object>> result = stockBean.updateStock(shopId, updates);
+            ShopBean result = stockBean.updateStock(shopId, updates);
             request.setAttribute("result", result);
             request.getRequestDispatcher("/Shop/updateResult.jsp").forward(request, response);
 
