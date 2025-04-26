@@ -13,6 +13,7 @@
 # Package Files #
 *.jar
 !mysql*.jar
+!gson*.jar
 *.war
 *.nar
 *.ear
