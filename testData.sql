@@ -132,3 +132,47 @@ INSERT INTO warehouseStockChange (id, sourceWarehouseid, destinationWarehouseid,
 INSERT INTO warehouseStockChangeDetail (warehouseStockChangeid, fruitid, num) VALUES
 (3, 3, 200),   -- 运输200箱蓝莓
 (3, 4, 100);   -- 运输100kg牛油果
+
+
+-- 消費記錄 (日本店鋪 2023-2024)
+INSERT INTO consume (id, DT, shopid) VALUES
+-- Tokyo Shop A (id=1001)
+(10001, '2023-04-15 09:30:00', 1001),
+(10002, '2023-07-22 14:15:00', 1001),
+(10003, '2023-12-05 16:45:00', 1001),
+(10004, '2024-02-18 11:20:00', 1001),
+
+-- Tokyo Shop B (id=1002)
+(20001, '2023-05-10 10:00:00', 1002),
+(20002, '2023-09-28 15:30:00', 1002),
+(20003, '2024-01-12 12:45:00', 1002),
+
+-- Osaka Shop A (id=2001)
+(30001, '2023-06-20 13:10:00', 2001),
+(30002, '2023-10-15 17:20:00', 2001),
+(30003, '2024-03-05 09:00:00', 2001);
+
+-- 消費細節 (日本水果 strawberry=1, orange=2)
+INSERT INTO consumeDetail (consumeid, fruitid, num) VALUES
+-- Tokyo Shop A 消費
+(10001, 1, 8),  -- 草莓 8kg
+(10001, 2, 3),  -- 橙子 3箱
+(10002, 1, 12),
+(10003, 2, 5),
+(10004, 1, 10),
+
+-- Tokyo Shop B 消費
+(20001, 1, 6),
+(20002, 2, 4),
+(20003, 1, 9),
+
+-- Osaka Shop A 消費
+(30001, 2, 3),
+(30002, 1, 7),
+(30003, 2, 6);
+
+-- 櫻花季特別消費（3-4月）
+INSERT INTO consume (id, DT, shopid) VALUES
+(10005, '2024-03-25 10:30:00', 1001);
+INSERT INTO consumeDetail (consumeid, fruitid, num) VALUES
+(10005, 1, 15);  -- 草莓消費增加

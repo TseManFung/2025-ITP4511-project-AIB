@@ -9,6 +9,15 @@ public class ConsumptionBean implements Serializable {
     private int totalConsumed;
     private String locationName;
     private String locationType;
+    private int year;
+
+    public int getYear() {
+        return this.year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
 
     public ConsumptionBean() {}
     

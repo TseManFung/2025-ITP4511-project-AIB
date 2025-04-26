@@ -21,7 +21,6 @@ public class NavbarTag extends SimpleTagSupport {
 
         Map<String, String> managerNav = new LinkedHashMap<String, String>() {
             {
-                put("Dashboard", "/Manager/managementDashboard.jsp");
                 put("User Management", "/userListServlet");
                 put("Fruit Management", "/fruitServlet");
                 put("Warehouse Monitoring", "/warehouseMonitorServlet");
@@ -110,7 +109,6 @@ public class NavbarTag extends SimpleTagSupport {
             warehouseNav.put("Stock Receive", "/centralWarehouseReceiveServlet");
             warehouseNav.put("Reverse", "/acceptReserveListServlet");
         } else {
-            warehouseNav.put("Warehouse Dashboard", "/Warehouse/warehouseDashboard.jsp");
             warehouseNav.put("Inventory Management", "/inventoryServlet");
             warehouseNav.put("Shipment Tracking", "/shipmentServlet");
             warehouseNav.put("Replenishment", "/replenishmentServlet");

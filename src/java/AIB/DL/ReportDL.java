@@ -55,49 +55,51 @@ public class ReportDL {
         return report;
     }
 
-    public List<ConsumptionBean> getConsumptionReport(String locationType, Long locationId) throws SQLException {
-    List<ConsumptionBean> report = new ArrayList<>();
-    String sql = "SELECT "
-        + "CASE "
-        + "WHEN MONTH(c.DT) BETWEEN 1 AND 3 THEN 'Winter' "
-        + "WHEN MONTH(c.DT) BETWEEN 4 AND 6 THEN 'Spring' "
-        + "WHEN MONTH(c.DT) BETWEEN 7 AND 9 THEN 'Summer' "
-        + "ELSE 'Autumn' END AS season, "
-        + "f.name AS fruit_name, SUM(cd.num) AS total_consumed, l.name AS location_name "
-        + "FROM consume c "
-        + "JOIN consumeDetail cd ON c.id = cd.consumeid "
-        + "JOIN fruit f ON cd.fruitid = f.id "
-        + "JOIN shop s ON c.shopid = s.id "
-        + "JOIN city ci ON s.cityid = ci.id "
-        + "JOIN country co ON ci.countryid = co.id "
-        + "JOIN (";
-
-    if(locationType.equals("shop")) {
-        sql += "SELECT s.id, s.name FROM shop s WHERE s.id = ?) l ON s.id = l.id ";
-    } else if(locationType.equals("city")) {
-        sql += "SELECT ci.id, ci.name FROM city ci WHERE ci.id = ?) l ON ci.id = l.id ";
-    } else {
-        sql += "SELECT co.id, co.name FROM country co WHERE co.id = ?) l ON co.id = l.id ";
-    }
-
-    sql += "GROUP BY season, f.name, l.name";
-
-    try (Connection conn = db.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql)) {
-        
-        stmt.setLong(1, locationId);
-        ResultSet rs = stmt.executeQuery();
-        
-        while(rs.next()) {
-            ConsumptionBean bean = new ConsumptionBean();
-            bean.setSeason(rs.getString("season"));
-            bean.setFruitName(rs.getString("fruit_name"));
-            bean.setTotalConsumed(rs.getInt("total_consumed"));
-            bean.setLocationName(rs.getString("location_name"));
-            bean.setLocationType(locationType.toUpperCase());
-            report.add(bean);
+      public List<ConsumptionBean> getConsumptionReport(String locationType, Long locationId) throws SQLException {
+        List<ConsumptionBean> report = new ArrayList<>();
+        String sql = "SELECT "
+            + "YEAR(c.DT) AS year, " // 加入年份
+            + "CASE "
+            + "WHEN MONTH(c.DT) BETWEEN 1 AND 3 THEN 'Winter' "
+            + "WHEN MONTH(c.DT) BETWEEN 4 AND 6 THEN 'Spring' "
+            + "WHEN MONTH(c.DT) BETWEEN 7 AND 9 THEN 'Summer' "
+            + "ELSE 'Autumn' END AS season, "
+            + "f.name AS fruit_name, SUM(cd.num) AS total_consumed, l.name AS location_name "
+            + "FROM consume c "
+            + "JOIN consumeDetail cd ON c.id = cd.consumeid "
+            + "JOIN fruit f ON cd.fruitid = f.id "
+            + "JOIN shop s ON c.shopid = s.id "
+            + "JOIN city ci ON s.cityid = ci.id "
+            + "JOIN country co ON ci.countryid = co.id "
+            + "JOIN (";
+    
+        if(locationType.equals("shop")) {
+            sql += "SELECT s.id, s.name FROM shop s WHERE s.id = ?) l ON s.id = l.id ";
+        } else if(locationType.equals("city")) {
+            sql += "SELECT ci.id, ci.name FROM city ci WHERE ci.id = ?) l ON ci.id = l.id ";
+        } else {
+            sql += "SELECT co.id, co.name FROM country co WHERE co.id = ?) l ON co.id = l.id ";
         }
+    
+        sql += "GROUP BY year, season, f.name, l.name"; // 按年份、季節、水果名稱和地點分組
+    
+        try (Connection conn = db.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setLong(1, locationId);
+            ResultSet rs = stmt.executeQuery();
+            
+            while(rs.next()) {
+                ConsumptionBean bean = new ConsumptionBean();
+                bean.setYear(rs.getInt("year")); // 設置年份
+                bean.setSeason(rs.getString("season"));
+                bean.setFruitName(rs.getString("fruit_name"));
+                bean.setTotalConsumed(rs.getInt("total_consumed"));
+                bean.setLocationName(rs.getString("location_name"));
+                bean.setLocationType(locationType.toUpperCase());
+                report.add(bean);
+            }
+        }
+        return report;
     }
-    return report;
-}
 }

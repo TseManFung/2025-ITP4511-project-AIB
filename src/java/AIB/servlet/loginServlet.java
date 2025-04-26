@@ -181,7 +181,7 @@ public class loginServlet extends HttpServlet {
                 break;
             case "S": // Senior management
             case "M": // Manager
-                response.sendRedirect("Manager/managementDashboard.jsp");
+                response.sendRedirect("reports");
                 break;
             default:
                 response.sendRedirect("login.jsp?error=invalid_role");
