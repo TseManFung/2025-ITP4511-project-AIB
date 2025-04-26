@@ -85,67 +85,76 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+        <script>
+            // Initialize labels and datasets
+            const labels = [];
+            const datasets = {};
 
-            <script>
-                // 從表格中提取資料
-                const labels = [];
-                const data = [];
-            
-                // 遍歷表格的每一行，提取年份和季節作為 labels，提取總消耗量作為 data
-                document.querySelectorAll('#chart-table tbody tr').forEach(row => {
-                    const year = row.children[0].innerText.trim(); // 年份
-                    const season = row.children[1].innerText.trim(); // 季節
-                    const totalConsumed = parseInt(row.children[3].innerText.trim(), 10); // 總消耗量
-            
-                    labels.push(`${year} ${season}`); // 合併年份和季節作為標籤
-                    data.push(totalConsumed); // 添加總消耗量
-                });
-            
-                // 繪製圖表
-                const ctx = document.getElementById('myChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Total Consumed',
-                            data: data,
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                            },
-                            title: {
-                                display: true,
-                                text: 'Consumption Report by Year and Season'
-                            }
+            <% 
+            ArrayList<String> labels = new ArrayList<>();
+            HashMap<String, Object> datasets = new HashMap<>();
+            if (consumptionReport != null) {
+                for (ConsumptionBean item : consumptionReport) { 
+                    String label = item.getYear() + " - " + item.getSeason();
+                    if (!labels.contains(label)) {
+                        labels.add(label);
+        %>
+                    labels.push('<%= label %>');
+        <% 
+                    }
+                    String fruitName = item.getFruitName();
+                    if (!datasets.containsKey(fruitName)) {
+                        datasets.put(fruitName, new Object()); // Corrected line
+                        double r = Math.random();
+                        double g = Math.random();
+                        double b = Math.random();
+                        %>
+                    datasets['<%= fruitName %>'] = {
+                        label: '<%= fruitName %>',
+                        data: [],
+                        borderColor: <%= "'rgba(" + (int)(r * 255) + "," + (int)(g * 255) + "," + (int)(b * 255) + ",1)'" %>,
+                        backgroundColor: <%= "'rgba(" + (int)(r * 255) + "," + (int)(g * 255) + "," + (int)(b * 255) + ",0.2)'" %>,
+                        tension: 0.1,
+                        fill: false
+                    };
+        <% 
+                    }
+        %>
+                    datasets['<%= fruitName %>'].data.push(<%= item.getTotalConsumed() %>);
+        <% 
+                }
+            } 
+        %>
+
+            // Convert datasets object to array
+            const datasetArray = Object.values(datasets);
+
+            // Draw the chart
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasetArray
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
                         },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Year and Season' // X 軸標籤
-                                }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Total Consumed' // Y 軸標籤
-                                }
-                            }
+                        title: {
+                            display: true,
+                            text: 'Consumption Report by Year and Season'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
                         }
                     }
-                });
-            </script>
-
-
+                }
+            });
 
             // Initialize Bootstrap Table
             $(document).ready(function() {
