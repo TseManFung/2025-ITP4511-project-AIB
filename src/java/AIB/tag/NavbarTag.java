@@ -23,7 +23,6 @@ public class NavbarTag extends SimpleTagSupport {
             {
                 put("User Management", "/userListServlet");
                 put("Fruit Management", "/fruitServlet");
-                put("Warehouse Monitoring", "/warehouseMonitorServlet");
                 put("Report","/reports");
             }
         };
